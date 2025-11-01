@@ -1,0 +1,23 @@
+{
+  "app_name": "AKKO",
+  "data_paths": {
+    "credentials": "private/data/credentials.enc",
+    "private_links": "private/data/private_links.json",
+    "public_links": "public/data/pro_links.json"
+  },
+  "features": {
+    "allow_public_links": true,
+    "show_icons": true
+  },
+  "security": {
+    "auto_lock_minutes": 1,
+    "hash_check": true
+  },
+  "theme": {
+    "accent_color": "#00C9A7",
+    "compact_view": true,
+    "font": "Inter",
+    "mode": "light",
+    "secondary_color": "#4F46E5"
+  }
+}
