@@ -40,6 +40,7 @@
   warn_no_return = true
   warn_unreachable = true
   strict_equality = true
+  plugins = ["pydantic.mypy"]
 
   [[tool.mypy.overrides]]
     module = "streamlit.*"
@@ -51,6 +52,10 @@
 
   [[tool.mypy.overrides]]
     module = "cryptography.*"
+    ignore_missing_imports = true
+
+  [[tool.mypy.overrides]]
+    module = "orjson"
     ignore_missing_imports = true
 
 # Configuration pytest
