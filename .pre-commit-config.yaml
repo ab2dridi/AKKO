@@ -33,7 +33,7 @@ repos:
       - id: mixed-line-ending
       - id: no-commit-to-branch
         args: [--branch, main, --branch, master, --branch, staging-stable]
-      - id: requirements-txt-fixer
+      # - id: requirements-txt-fixer
       # - id: sort-simple-yaml
       - id: trailing-whitespace
         exclude: '^.*\.patch$'
