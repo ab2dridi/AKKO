@@ -49,6 +49,10 @@
     module = "pyperclip.*"
     ignore_missing_imports = true
 
+  [[tool.mypy.overrides]]
+    module = "cryptography.*"
+    ignore_missing_imports = true
+
 # Configuration pytest
 [tool.pytest.ini_options]
   minversion = "6.0"
