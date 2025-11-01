@@ -25,7 +25,7 @@ repos:
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: file-contents-sorter
-        args: [--unique, --ignore-case]
+        args: [--unique]
         files: requirements(-dev)?\.(txt|in)$
       - id: fix-byte-order-marker
       # - id: forbid-new-submodules
