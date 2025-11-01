@@ -1,0 +1,4 @@
+ipykernel
+ipywidgets
+pytest
+pytest-sugar
