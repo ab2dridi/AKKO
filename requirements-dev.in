@@ -1,4 +1,7 @@
 ipykernel
 ipywidgets
+ruff
 pytest
+pytest-cov
 pytest-sugar
+mypy
