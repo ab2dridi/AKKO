@@ -72,6 +72,8 @@ select = [
 ignore = [
   # Missing docstring for public modules (too strict for us)
   "D100",
+  # Checks for long exception messages that are not defined in the exception class itself.
+  "TRY003",
 ]
 
 # Maximum line length (compatible with Black)
