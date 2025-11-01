@@ -5,25 +5,8 @@ Launcher module for AKKO application.
 import os
 import subprocess
 import sys
-from pathlib import Path
 
-import akko.front.app
-
-
-def find_package_path() -> Path:
-    """Find the path to the installed AKKO package.
-
-    Returns:
-        pathlib.Path: The path to the installed AKKO package directory.
-    """
-    # Get the path from the akko.front.app module
-    app_module_path = Path(akko.front.app.__file__)
-
-    # Go up to the akko package directory (from akko/front/app.py to akko/)
-    package_path = app_module_path.parent.parent
-
-    return package_path
-
+from akko.helpers import find_package_path
 
 def launch():
     """Launch the AKKO Streamlit application."""

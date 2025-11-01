@@ -2,9 +2,22 @@ import os
 
 import pyperclip
 import streamlit as st
+from pathlib import Path
 
+import akko
 from akko.security import ICON_DIR
 
+def find_package_path() -> Path:
+    """Find the path to the installed AKKO package.
+
+    Returns:
+        pathlib.Path: The path to the installed AKKO package directory.
+    """
+    init_path = Path(akko.__file__)
+
+    package_path = init_path.parent
+
+    return package_path
 
 def try_copy(text: str, label="Texte"):
     try:
