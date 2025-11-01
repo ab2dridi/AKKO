@@ -1,6 +1,8 @@
-import streamlit as st
-from utils.security import save_data
 from datetime import date
+
+import streamlit as st
+
+from akko.security import save_data
 
 
 def add_credential(data, fernet):
@@ -9,13 +11,13 @@ def add_credential(data, fernet):
     cred_type = st.radio(
         "Credential type",
         ["🌐 Website", "🐧 Linux Server", "🔑 GitLab Token"],
-        horizontal=True
+        horizontal=True,
     )
 
     type_map = {
         "🌐 Website": "Website",
         "🐧 Linux Server": "Linux Server",
-        "🔑 GitLab Token": "GitLab Token"
+        "🔑 GitLab Token": "GitLab Token",
     }
 
     cred_type = type_map[cred_type]
@@ -28,13 +30,15 @@ def add_credential(data, fernet):
             password = st.text_input("Password", type="password")
             submitted = st.form_submit_button("Add")
             if submitted and name and username and password:
-                data.append({
-                    "type": cred_type,
-                    "name": name,
-                    "url": url,
-                    "username": username,
-                    "password": password
-                })
+                data.append(
+                    {
+                        "type": cred_type,
+                        "name": name,
+                        "url": url,
+                        "username": username,
+                        "password": password,
+                    }
+                )
                 save_data(data, fernet)
                 st.success("✅ Credential added.")
 
@@ -44,13 +48,15 @@ def add_credential(data, fernet):
             password = st.text_input("Password", type="password")
             submitted = st.form_submit_button("Add")
             if submitted and hostname and username and password:
-                data.append({
-                    "type": cred_type,
-                    "name": hostname,
-                    "hostname": hostname,
-                    "username": username,
-                    "password": password
-                })
+                data.append(
+                    {
+                        "type": cred_type,
+                        "name": hostname,
+                        "hostname": hostname,
+                        "username": username,
+                        "password": password,
+                    }
+                )
                 save_data(data, fernet)
                 st.success("✅ Credential added.")
 
@@ -63,19 +69,21 @@ def add_credential(data, fernet):
 
             expires = st.checkbox("Token expires?", value=False)
             expiration_date = st.date_input(
-                "Expiration date (ignored if unchecked)",
-                value=default_date
+                "Expiration date (ignored if unchecked)", value=default_date
             )
 
             submitted = st.form_submit_button("Add token")
             if submitted and token:
-                data.append({
-                    "type": cred_type,
-                    "name": name or "GitLab Token",
-                    "token": token,
-                    "expires": expires,
-                    "expiration_date": expiration_date.isoformat()
-                        if expires else None
-                })
+                data.append(
+                    {
+                        "type": cred_type,
+                        "name": name or "GitLab Token",
+                        "token": token,
+                        "expires": expires,
+                        "expiration_date": expiration_date.isoformat()
+                        if expires
+                        else None,
+                    }
+                )
                 save_data(data, fernet)
                 st.success("✅ GitLab token added.")

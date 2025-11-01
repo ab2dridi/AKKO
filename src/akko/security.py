@@ -1,9 +1,11 @@
-import os
-import json
 import base64
 import hashlib
+import json
+import os
+
 from cryptography.fernet import Fernet
-from utils.config_loader import load_config
+
+from akko.config_loader import load_config
 
 # --- Load configuration ---
 config = load_config()
@@ -50,7 +52,6 @@ def load_data(fernet: Fernet) -> list:
         # signaler un mauvais mot de passe
         raise ValueError("Invalid master password") from e
     return json.loads(decrypted.decode("utf-8"))
-
 
 
 def save_data(data: list, fernet: Fernet):

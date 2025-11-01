@@ -1,11 +1,13 @@
-import streamlit as st
 from datetime import datetime, timedelta
+
+import streamlit as st
 from cryptography.fernet import Fernet
-from utils.security import derive_key, load_data, load_links
-from utils.config_loader import load_config
-from modules.credentials_list import show_credentials
-from modules.credentials_manage import add_credential
-from modules.links_page import show_links
+
+from akko.config_loader import load_config
+from akko.credentials_list import show_credentials
+from akko.credentials_manage import add_credential
+from akko.links_page import show_links
+from akko.security import derive_key, load_data, load_links
 
 # --- Load configuration ---
 config = load_config()
@@ -15,7 +17,8 @@ AUTO_LOCK_MINUTES = config.get("security", {}).get("auto_lock_minutes", 5)
 st.set_page_config(page_title=config["app_name"], layout="wide", page_icon="🛡️")
 
 # --- Custom CSS ---
-st.markdown("""
+st.markdown(
+    """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
@@ -61,7 +64,9 @@ st.markdown("""
             margin: 0.5rem 0 1rem 0;
         }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # --- Sidebar Header ---
 st.sidebar.markdown(
@@ -71,7 +76,7 @@ st.sidebar.markdown(
     <div class='sidebar-quote'>“Your keys. Your control. Always offline.”</div>
     <div class='sidebar-divider'></div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # --- Sidebar Navigation ---
@@ -84,6 +89,7 @@ if "authenticated" not in st.session_state:
 if "last_activity" not in st.session_state:
     st.session_state["last_activity"] = datetime.now()
 
+
 def check_auto_lock():
     if st.session_state["authenticated"]:
         elapsed = datetime.now() - st.session_state["last_activity"]
@@ -93,8 +99,10 @@ def check_auto_lock():
             st.warning("🔒 Vault locked due to inactivity.")
             st.rerun()
 
+
 def update_activity():
     st.session_state["last_activity"] = datetime.now()
+
 
 check_auto_lock()
 
@@ -105,9 +113,18 @@ links = load_links()
 # --- Credentials page ---
 if page == "🔐 Credentials":
     if not st.session_state["authenticated"]:
-        st.markdown(f"<h2 style='text-align:center;'>🛡️ {config['app_name']}</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; font-size:1.1rem;'>Access Key • Keep Ownership</p>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; font-size:1.1rem;'>“Your keys. Your control. Always offline.”</p>", unsafe_allow_html=True)
+        st.markdown(
+            f"<h2 style='text-align:center;'>🛡️ {config['app_name']}</h2>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            "<p style='text-align:center; font-size:1.1rem;'>Access Key • Keep Ownership</p>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            "<p style='text-align:center; font-size:1.1rem;'>“Your keys. Your control. Always offline.”</p>",
+            unsafe_allow_html=True,
+        )
         st.markdown("---")
 
         master_password = st.text_input("Master password", type="password")
@@ -154,5 +171,9 @@ elif page == "🔗 Links":
 
 # --- Footer ---
 st.markdown("---")
-st.caption(f"🛡️ {config['app_name']} — Auto-lock after {AUTO_LOCK_MINUTES} min inactivity")
-st.caption("💾 credentials.enc → private/ | private_links.json / pro_links.json → separate files")
+st.caption(
+    f"🛡️ {config['app_name']} — Auto-lock after {AUTO_LOCK_MINUTES} min inactivity"
+)
+st.caption(
+    "💾 credentials.enc → private/ | private_links.json / pro_links.json → separate files"
+)

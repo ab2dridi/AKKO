@@ -1,0 +1,26 @@
+[build-system]
+  requires = ["hatch-requirements-txt", "hatchling"]
+  build-backend = "hatchling.build"
+
+[project]
+  name = "akko"
+  version = "0.1.0"
+  description = "AKKO (Access Key Keep Ownership) is a simple, secure, and serverless password and credential manager designed to keep your data under your control."
+  readme = "README.md"
+  requires-python = ">=3.10"
+  dynamic = ["dependencies"]
+
+  [project.scripts]
+    akko-launch = "akko.launcher:launch"
+
+[tool.hatch.metadata]
+  allow-direct-references = true
+
+  [tool.hatch.metadata.hooks.requirements_txt]
+    files = ["requirements.txt"]
+
+[tool.hatch.build.targets.wheel]
+  packages = ["src/akko"]
+
+  [tool.hatch.build.targets.wheel.sources]
+    "src" = ""

@@ -1,7 +1,9 @@
-import streamlit as st
 import os
+
 import pyperclip
-from utils.security import ICON_DIR
+import streamlit as st
+
+from akko.security import ICON_DIR
 
 
 def try_copy(text: str, label="Texte"):

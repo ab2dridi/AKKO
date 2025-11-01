@@ -1,7 +1,9 @@
-import streamlit as st
-from utils.helpers import try_copy
-from utils.security import save_data
 from datetime import datetime
+
+import streamlit as st
+
+from akko.helpers import try_copy
+from akko.security import save_data
 
 
 def show_credentials(data, fernet):
@@ -12,7 +14,9 @@ def show_credentials(data, fernet):
         return
 
     # --- Search ---
-    query = st.text_input("🔎 Quick search (name, URL, user, host...)", "").strip().lower()
+    query = (
+        st.text_input("🔎 Quick search (name, URL, user, host...)", "").strip().lower()
+    )
 
     # --- Filter by type ---
     st.markdown("### 🔍 Filter by type")
@@ -20,18 +24,21 @@ def show_credentials(data, fernet):
     type_map = {
         "🌐 Websites": "Website",
         "🐧 Linux Servers": "Linux Server",
-        "🔑 GitLab Tokens": "GitLab Token"
+        "🔑 GitLab Tokens": "GitLab Token",
     }
     selected_type = st.radio("", types, horizontal=True, index=3)
 
-    filtered = data if selected_type == "All" else [
-        d for d in data if d.get("type") == type_map[selected_type]
-    ]
+    filtered = (
+        data
+        if selected_type == "All"
+        else [d for d in data if d.get("type") == type_map[selected_type]]
+    )
 
     # --- Apply search ---
     if query:
         filtered = [
-            d for d in filtered
+            d
+            for d in filtered
             if query in str(d.get("name", "")).lower()
             or query in str(d.get("url", "")).lower()
             or query in str(d.get("username", "")).lower()
@@ -44,7 +51,8 @@ def show_credentials(data, fernet):
         return
 
     # --- Global card style ---
-    st.markdown("""
+    st.markdown(
+        """
         <style>
             .akko-card {
                 background: rgba(255, 255, 255, 0.8);
@@ -67,13 +75,17 @@ def show_credentials(data, fernet):
                 font-size: 0.9rem;
             }
         </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # --- Display each credential as a card ---
     for idx, item in enumerate(filtered):
         icon = (
-            "🌐" if item.get("type") == "Website"
-            else "🐧" if item.get("type") == "Linux Server"
+            "🌐"
+            if item.get("type") == "Website"
+            else "🐧"
+            if item.get("type") == "Linux Server"
             else "🔑"
         )
 
@@ -81,7 +93,8 @@ def show_credentials(data, fernet):
         cred_type = item.get("type", "")
 
         # Header
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="akko-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
@@ -90,7 +103,9 @@ def show_credentials(data, fernet):
                     <span class="akko-sub" style="margin-left:10px;">({cred_type})</span>
                 </div>
             </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         # --- Details by type ---
         cols = st.columns([3, 3, 3, 2])

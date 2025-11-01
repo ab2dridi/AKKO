@@ -1,13 +1,18 @@
-import streamlit as st
 import os
-from utils.security import save_links, load_links, ICON_DIR
-from utils.helpers import find_icon, try_copy
+
+import streamlit as st
+
+from akko.helpers import find_icon, try_copy
+from akko.security import load_links, save_links
+
 
 def normalize_category(name: str) -> str:
     return name.strip().lower()
 
+
 def display_category(name: str) -> str:
     return name.strip().capitalize() if name else "Other"
+
 
 def show_links():
     links_data = load_links()
@@ -20,11 +25,15 @@ def show_links():
             l["_tag"] = tag
         all_links.extend(data["links"])
 
-    all_categories = sorted(list(set(
-        normalize_category(c)
-        for d in [private_links, public_links]
-        for c in d["categories"]
-    )))
+    all_categories = sorted(
+        list(
+            set(
+                normalize_category(c)
+                for d in [private_links, public_links]
+                for c in d["categories"]
+            )
+        )
+    )
 
     st.subheader("🌐 Links")
 
@@ -46,9 +55,15 @@ def show_links():
             cat_col = st.columns([2, 1])
             with cat_col[0]:
                 display_cats = [display_category(c) for c in all_categories]
-                category_display = st.selectbox("Existing category", ["(New category)"] + display_cats)
+                category_display = st.selectbox(
+                    "Existing category", ["(New category)"] + display_cats
+                )
             with cat_col[1]:
-                new_cat = st.text_input("New category") if category_display == "(New category)" else ""
+                new_cat = (
+                    st.text_input("New category")
+                    if category_display == "(New category)"
+                    else ""
+                )
 
             tag = st.radio("Visibility", ["public", "private"], horizontal=True)
             submitted = st.form_submit_button("Add")
@@ -60,11 +75,9 @@ def show_links():
                 if final_cat and final_cat not in target["categories"]:
                     target["categories"].append(final_cat)
 
-                target["links"].append({
-                    "title": title,
-                    "url": url,
-                    "category": final_cat
-                })
+                target["links"].append(
+                    {"title": title, "url": url, "category": final_cat}
+                )
 
                 save_links({"perso": private_links, "pro": public_links})
                 st.success("✅ Link added successfully.")
@@ -76,21 +89,31 @@ def show_links():
         query = st.text_input("🔎 Search (title, URL, category)").strip().lower()
 
         st.markdown("### 🔍 Filters")
-        filter_tag = st.radio("Visibility", ["All", "public", "private"], horizontal=True, index=0)
+        filter_tag = st.radio(
+            "Visibility", ["All", "public", "private"], horizontal=True, index=0
+        )
 
         display_cats = [display_category(c) for c in all_categories]
-        filter_cat_display = st.radio("Category", ["All"] + display_cats, horizontal=True, index=0)
-        filter_cat = normalize_category(filter_cat_display) if filter_cat_display != "All" else "All"
+        filter_cat_display = st.radio(
+            "Category", ["All"] + display_cats, horizontal=True, index=0
+        )
+        filter_cat = (
+            normalize_category(filter_cat_display)
+            if filter_cat_display != "All"
+            else "All"
+        )
 
         filtered = [
-            l for l in all_links
+            l
+            for l in all_links
             if (filter_tag == "All" or l["_tag"] == filter_tag)
             and (filter_cat == "All" or normalize_category(l["category"]) == filter_cat)
         ]
 
         if query:
             filtered = [
-                l for l in filtered
+                l
+                for l in filtered
                 if query in l.get("title", "").lower()
                 or query in l.get("url", "").lower()
                 or query in normalize_category(l.get("category", ""))
@@ -107,21 +130,27 @@ def show_links():
                 tag = l.get("_tag", "public")
 
                 # --- Card-style block ---
-                st.markdown("""
+                st.markdown(
+                    """
                     <div style="background:rgba(255,255,255,0.8);
                                 border-radius:14px;
                                 padding:1rem 1.2rem;
                                 margin-bottom:1rem;
                                 box-shadow:0 4px 12px rgba(0,0,0,0.05);
                                 transition:all 0.2s ease-in-out;">
-                """, unsafe_allow_html=True)
+                """,
+                    unsafe_allow_html=True,
+                )
 
                 cols = st.columns([1.2, 6, 2, 1])
                 with cols[0]:
                     if icon_file and os.path.exists(icon_file):
                         st.image(icon_file, width=40)
                     else:
-                        st.markdown("<div style='font-size:28px;'>🗂️</div>", unsafe_allow_html=True)
+                        st.markdown(
+                            "<div style='font-size:28px;'>🗂️</div>",
+                            unsafe_allow_html=True,
+                        )
 
                 with cols[1]:
                     st.markdown(f"**{title}**")
