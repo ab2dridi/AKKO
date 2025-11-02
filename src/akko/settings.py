@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import orjson
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import akko
@@ -21,7 +21,7 @@ def find_package_path() -> Path:
     """
     init_path = Path(akko.__file__)
 
-    return init_path.parent
+    return init_path.parent.resolve()
 
 
 CONFIG_FILENAME = "config.json"
@@ -152,11 +152,11 @@ class ThemeConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    accent_color: str
-    compact_view: bool
-    font: str
-    mode: str
-    secondary_color: str
+    accent_color: str = Field(description="Primary accent color.")
+    compact_view: bool = Field(description="Whether to use a compact layout.")
+    font: str = Field(description="Font family to use.")
+    mode: str = Field(description="Light or dark mode.")
+    secondary_color: str = Field(description="Secondary color for accents.")
 
 
 class AkkoSettings(BaseSettings):
@@ -170,12 +170,28 @@ class AkkoSettings(BaseSettings):
 
     model_config = SettingsConfigDict(extra="forbid")
 
-    app_name: str
-    data_paths: DataPaths
-    features: FeatureFlags
-    security: SecurityConfig
-    theme: ThemeConfig
-    config_path: Path = Field(default_factory=Path.cwd, exclude=True)
+    app_name: str = Field(default="AKKO", description="Name of the application")
+    data_paths: DataPaths = Field(
+        description="Paths to various data files used by the application."
+    )
+    features: FeatureFlags = Field(
+        description="Feature flags to enable or disable optional components."
+    )
+    security: SecurityConfig = Field(
+        description="Security-related configuration options."
+    )
+    theme: ThemeConfig = Field(description="Theme customization settings.")
+    config_path: Path = Field(
+        default_factory=lambda: Path.cwd() / "config.json", exclude=True
+    )
+
+    @model_validator(mode="after")
+    def _ensure_data_directories(self) -> AkkoSettings:
+        """Create directories required by file-backed settings."""
+        self.credentials_file.parent.mkdir(parents=True, exist_ok=True)
+        self.private_links_file.parent.mkdir(parents=True, exist_ok=True)
+        self.public_links_file.parent.mkdir(parents=True, exist_ok=True)
+        return self
 
     def resolve_path(self: AkkoSettings, path: Path | str) -> Path:
         """Resolve *path* relative to the configuration file location.
@@ -193,7 +209,7 @@ class AkkoSettings(BaseSettings):
 
     @property
     def credentials_file(self: AkkoSettings) -> Path:
-        """Get the credential file path.
+        """Get the credential file path and ensure its directory exists.
 
         Args:
             self (AkkoSettings): The settings instance.
@@ -201,11 +217,13 @@ class AkkoSettings(BaseSettings):
         Returns:
             Path: The resolved credentials file path.
         """
-        return self.resolve_path(self.data_paths.credentials)
+        file_path = self.resolve_path(self.data_paths.credentials)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        return file_path
 
     @property
     def private_links_file(self: AkkoSettings) -> Path:
-        """Get the private links file path.
+        """Get the private links file path and ensure its directory exists.
 
         Args:
             self (AkkoSettings): The settings instance.
@@ -213,11 +231,13 @@ class AkkoSettings(BaseSettings):
         Returns:
             Path: The resolved private links file path.
         """
-        return self.resolve_path(self.data_paths.private_links)
+        file_path = self.resolve_path(self.data_paths.private_links)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        return file_path
 
     @property
     def public_links_file(self: AkkoSettings) -> Path:
-        """Get the public links file path.
+        """Get the public links file path and ensure its directory exists.
 
         Args:
             self (AkkoSettings): The settings instance.
@@ -225,11 +245,13 @@ class AkkoSettings(BaseSettings):
         Returns:
             Path: The resolved public links file path.
         """
-        return self.resolve_path(self.data_paths.public_links)
+        file_path = self.resolve_path(self.data_paths.public_links)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        return file_path
 
     @property
     def icons_directory(self: AkkoSettings) -> Path:
-        """Get the icons directory path.
+        """Get the icons directory path .
 
         Args:
             self (AkkoSettings): The settings instance.
@@ -237,7 +259,7 @@ class AkkoSettings(BaseSettings):
         Returns:
             Path: The resolved icons directory path.
         """
-        return self.public_links_file.parent / "icons"
+        return find_package_path() / "resources" / "icons"
 
 
 def _load_raw_config(config_path: Path) -> dict[str, Any]:
@@ -273,13 +295,15 @@ def _build_settings() -> AkkoSettings:
     """
     config_path = ensure_config_file()
     raw_config = _load_raw_config(config_path)
+    payload: dict[str, Any] = dict(raw_config)
+    payload["config_path"] = config_path
     try:
-        settings = AkkoSettings.model_validate(raw_config)
+        settings = AkkoSettings.model_validate(payload)
     except ValidationError as exc:  # pragma: no cover - configuration errors
         message = "Configuration validation failed"
         raise ValueError(message) from exc
     else:
-        return settings.model_copy(update={"config_path": config_path})
+        return settings
 
 
 @lru_cache(maxsize=1)
