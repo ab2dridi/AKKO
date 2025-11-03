@@ -27,19 +27,30 @@
 
 `akko-launch` is the packaged command-line entry point that validates and starts the Streamlit UI from a trusted location.
 
-```bash
-# Run the latest published package without installing anything locally
-uv tool run akko-launch
-```
+### with uv
 
 ```bash
-# Use your synced project environment (after `uv sync`)
+# Install the local package, then launch it with uv run
+uv pip install .
 uv run akko-launch
 ```
 
+### with pipx
+
 ```bash
-# Create an ephemeral virtualenv managed by pipx
-pipx run akko-launch
+# Install AKKO with pipx, then launch the interface
+pipx install .
+akko-launch
+```
+
+### with plain virtual environement
+
+```bash
+python -m venv .venv-akko
+source .venv-akko/bin/activate        # macOS/Linux
+# .venv-akko\Scripts\activate         # Windows PowerShell
+pip install .
+akko-launch
 ```
 
 Prefer a manual fallback? You can always execute `python -m akko.launcher` from an environment where AKKO is installed.
