@@ -20,13 +20,28 @@ def _persist_credential(
     fernet: Fernet,
     credential: CredentialUnion,
 ) -> None:
-    """Append credential to the in-memory store and persist the encrypted payload."""
+    """Append credential to the in-memory store and persist the encrypted payload.
+
+    Args:
+        data (list[tuple[str, CredentialUnion]]): Mutable credential store.
+        fernet (Fernet): Encryption helper used to serialize data to disk.
+        credential (CredentialUnion): Credential instance to append.
+
+    """
     data.append((credential.credential_type, credential))
     save_data(data, fernet)
 
 
 def _make_credential_form(name: NormalizedCredentialName) -> dict[str, Any]:
-    """Generate a form dictionary for the given credential type."""
+    """Generate a form dictionary for the given credential type.
+
+    Args:
+        name (NormalizedCredentialName): Normalized credential type to render.
+
+    Returns:
+        dict[str, Any]: Raw form data gathered from Streamlit widgets.
+
+    """
     form_data: dict[str, Any] = {}
     if name == "Website":
         form_data["name"] = st.text_input("Name / Description")
@@ -66,7 +81,13 @@ def _make_credential_form(name: NormalizedCredentialName) -> dict[str, Any]:
 
 
 def add_credential(data: list[tuple[str, CredentialUnion]], fernet: Fernet) -> None:
-    """Add a new credential to the data list."""
+    """Add a new credential to the data list.
+
+    Args:
+        data (list[tuple[str, CredentialUnion]]): Credential store to update.
+        fernet (Fernet): Encryption helper passed to persistence operations.
+
+    """
     st.subheader("📝 New credential")
 
     selected_cred_type = st.radio(

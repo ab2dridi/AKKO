@@ -13,19 +13,46 @@ NAME_CLEANER = compile(r"[^a-zA-Z0-9_\- ]+")
 def clean_name_relation(
     registry: dict[str, "BaseCredentialType"] = credential_registry,
 ) -> dict[str, str]:
-    """Create a mapping of normalized names to registry names."""
+    """Create a mapping of normalized names to registry names.
+
+    Args:
+        registry (dict[str, BaseCredentialType]): Registry to normalise. Defaults
+            to the global ``credential_registry``.
+
+    Returns:
+        dict[str, str]: Mapping of registry keys to their normalised variants.
+
+    """
     return {name: NAME_CLEANER.sub("", name).strip() for name in registry}
 
 
 def invert_clean_name_relation(
     registry: dict[str, "BaseCredentialType"] = credential_registry,
 ) -> dict[str, str]:
-    """Invert a name relation mapping."""
+    """Invert a name relation mapping.
+
+    Args:
+        registry (dict[str, BaseCredentialType]): Registry to normalise. Defaults
+            to the global ``credential_registry``.
+
+    Returns:
+        dict[str, str]: Mapping of normalised names back to registry keys.
+
+    """
     return {NAME_CLEANER.sub("", name).strip(): name for name in registry}
 
 
 def register_credential(name: str) -> Callable[[type[BaseModelT]], type[BaseModelT]]:
-    """Register a credential schema under ``name``."""
+    """Register a credential schema under ``name``.
+
+    Args:
+        name (str): Display name under which the credential model is stored.
+
+    Returns:
+        Callable[[type[BaseModelT]], type[BaseModelT]]: Decorator registering the
+            annotated Pydantic model.
+
+    """
 
     def decorator(cls: type[BaseModelT]) -> type[BaseModelT]:
         if name in credential_registry:
@@ -41,11 +68,11 @@ class WebsiteCredential(BaseModel):
     """Website credential object.
 
     Attributes:
-        credential_type (Literal["website"]): The type of credential
-        name (str): Name or description of the website
-        url (AnyUrl): URL of the website
-        username (str): Username for the website
-        password (SecretStr): Password for the website
+        credential_type (str): Constant value ``"🌐 Website"`` identifying the schema.
+        name (str): Name or description of the website.
+        url (AnyUrl): URL of the website.
+        username (str): Username for the website.
+        password (SecretStr): Password for the website.
     """
 
     name: str = Field(..., description="Name or description of the website")
@@ -64,11 +91,12 @@ class LinuxServerCredential(BaseModel):
     """Linux server credential object.
 
     Attributes:
-        credential_type (Literal["linux server"]): The type of credential
-        name (str): Name or description of the server
-        hostname (AnyUrl|IPvAnyAddress|str): Hostname or IP address of the server
-        username (str): Username for the server
-        password (SecretStr): Password for the server
+        credential_type (str): Constant value ``"🐧 Linux Server"`` identifying
+            the schema.
+        name (str): Name or description of the server.
+        hostname (AnyUrl | IPvAnyAddress | str): Hostname or IP address of the server.
+        username (str): Username for the server.
+        password (SecretStr): Password for the server.
     """
 
     name: str = Field(..., description="Name or description of the server")
@@ -89,11 +117,12 @@ class GitLabTokenCredential(BaseModel):
     """Bearer token credential object.
 
     Attributes:
-        credential_type (Literal["gitlab token"]): The type of credential
-        name (str): Name of the GitLab token
-        token (SecretStr): Personal access token for GitLab
-        expires (bool): Whether the token expires
-        expiration_date (str | None): Expiration date of the token in ISO format
+        credential_type (str): Constant value ``"🔑 GitLab Token"`` identifying the
+            schema.
+        name (str): Name of the GitLab token.
+        token (SecretStr): Personal access token for GitLab.
+        expires (bool): Whether the token expires.
+        expiration_date (str | None): Expiration date of the token in ISO format.
     """
 
     name: str = Field(..., description="Name of the GitLab token")

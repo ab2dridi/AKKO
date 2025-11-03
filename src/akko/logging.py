@@ -1,4 +1,4 @@
-"""Log settings and configuration for mcp-websearch."""
+"""Log settings and configuration for the akko package."""
 
 import os
 import sys
@@ -175,13 +175,12 @@ def human_readable_renderer(
     Format: [TIME] [LEVEL] [MODULE:FUNC:LINE] MESSAGE {EXTRA_FIELDS}
 
     Args:
-        logger (Optional[Logger]): the logger instance, not used in this renderer.
-        method_name (Optional[str]): the method name, not used in this renderer.
-        event_dict (EventDict): a dictionnary of event data, typically containing
-            log information.
+        logger (Logger | None): Logger instance (unused by this renderer).
+        method_name (str | None): Logging method name (unused by this renderer).
+        event_dict (EventDict): Event data collected for the log entry.
 
     Returns:
-        str: A formatted string representing the log entry, including timestamp,
+        str: Formatted log entry with timestamp, call site, message, and extras.
 
     """
     timestamp = datetime.fromisoformat(
@@ -286,13 +285,10 @@ def configure_logger(
     This function should be called once at package initialization.
 
     Args:
-        log_level (int|str): The logging level to set for the logger.
-            (default to logging.INFO).
-        output_stream (Any): The stream to which logs will be written
-            (default is sys.stdout).
-        log_file (Optional[str|Path]): Optional path to a log file if logs should
-            also be written to a file.
-        human_readable (bool): If True, use a human-readable renderer instead of JSON.
+        log_level (int | str): Logging level to set for structlog.
+        output_stream (TextIO): Stream receiving log records (defaults to stdout).
+        log_file (str | Path | None): Optional path for an additional JSON log file.
+        human_readable (bool): Use human-readable renderer when True, JSON otherwise.
 
     """
     if isinstance(log_level, str):
@@ -486,13 +482,12 @@ def apply_structlog_to_other_packages(
     name: str,
     log_level: int | str | None = None,
 ) -> None:
-    """Apply the main mcp-websearch logger configuration to other packages.
+    """Apply the akko logger configuration to another package.
 
     Args:
-        name (str): The name of the package or module to configure.
-        log_level (Optional[int  |  str], optional): The logging level to set for
-            the package logger. If None, it will get the mcp-websearch logger's level.
-            Defaults to None.
+        name (str): Package or module name to configure.
+        log_level (int | str | None): Logging level for the target logger. When None,
+            reuse the akko root logger level.
 
     """
     base_package_logger = getLogger()

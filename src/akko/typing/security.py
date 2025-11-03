@@ -7,10 +7,10 @@ class LinkEntry(BaseModel):
     """Link entry stored on disk or used in the UI.
 
     Attributes:
-        title (str): Title of the link
-        url (str): URL of the link
-        category (str): Category of the link
-        _tag (str): Tag indicating public or private link
+        title (str): Title of the link.
+        url (AnyUrl): Fully qualified URL associated with the link.
+        category (str): Category assigned to the link.
+        tag (str): Tag indicating whether the link is public or private.
     """
 
     title: str = Field(default="(Untitled)", description="Title of the link")
@@ -22,29 +22,29 @@ class LinkEntry(BaseModel):
         default="public", description="Tag indicating public or private link"
     )
 
-    def __getitem__(self, name: str) -> str | AnyUrl:
+    def __getitem__(self, name: str) -> object:
         """Get item by attributes name.
 
         Args:
             name (str): The name of the attribute to retrieve.
 
         Returns:
-            str | AnyUrl: The value of the attribute.
+            object: The value of the attribute.
         """
-        return super().__getattribute__(name)  # type: ignore[no-any-return]
+        return super().__getattribute__(name)
 
-    def get(self, name: str) -> str | AnyUrl | None:
+    def get(self, name: str) -> object | None:
         """Get item by attributes name.
 
         Args:
             name (str): The name of the attribute to retrieve.
 
         Returns:
-            str | AnyUrl | None: The value of the attribute or None if not found.
+            object | None: The value of the attribute or None if not found.
         """
         try:
             return self.__getitem__(name)
-        except KeyError:
+        except AttributeError:
             return None
 
 
@@ -52,8 +52,8 @@ class LinkCollection(BaseModel):
     """Collection of links with associated categories.
 
     Attributes:
-        categories (list[str]): List of link categories
-        links (list[LinkEntry]): List of link entries
+        categories (list[str]): List of link categories.
+        links (list[LinkEntry]): List of link entries in the collection.
     """
 
     categories: list[str] = Field(
@@ -85,23 +85,23 @@ class LinkCollection(BaseModel):
         """
         try:
             return self.__getitem__(name)
-        except KeyError:
+        except AttributeError:
             return None
 
 
 class ApplicationData(BaseModel):
-    """Application data structure containing personal and professional links.
+    """Application data structure containing private and public link groups.
 
     Attributes:
-        perso (LinkCollection): Collection of personal links
-        pro (LinkCollection): Collection of professional links
+        private (LinkCollection): Collection of private links.
+        public (LinkCollection): Collection of public links.
     """
 
     private: LinkCollection = Field(
-        default_factory=LinkCollection, description="Collection of personal links"
+        default_factory=LinkCollection, description="Collection of private links"
     )
     public: LinkCollection = Field(
-        default_factory=LinkCollection, description="Collection of professional links"
+        default_factory=LinkCollection, description="Collection of public links"
     )
 
     def __getitem__(self, name: str) -> LinkCollection:
@@ -129,7 +129,7 @@ class ApplicationData(BaseModel):
         """
         try:
             return self.__getitem__(name)
-        except KeyError:
+        except (KeyError, AttributeError):
             return LinkCollection()
 
     @model_validator(mode="after")
@@ -145,7 +145,7 @@ class ApplicationData(BaseModel):
         """Get all unique categories from both link collections.
 
         Returns:
-            set[str]: A set of all unique categories.
+            list[str]: Sorted list of all unique categories.
         """
         return sorted(
             {

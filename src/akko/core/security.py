@@ -109,9 +109,10 @@ def save_data(
     """Encrypt and persist credential entries to disk.
 
     Args:
-        data: Sequence of credential type names and their validated models.
-        fernet: Active Fernet instance used for symmetric encryption.
-        file_path: Destination JSON file path for the encrypted payload.
+        data (list[tuple[str, CredentialUnion]]): Credential type names with
+            their validated models.
+        fernet (Fernet): Active Fernet instance used for symmetric encryption.
+        file_path (Path): Destination JSON file path for the encrypted payload.
     """
     serializable: list[tuple[str, dict[str, JSONValue]]] = []
     for credential_type, credential in data:
@@ -141,6 +142,9 @@ def _init_links_file(path: Path) -> LinkCollection:
 
     Args:
         path (Path): Path to the link collection JSON file.
+
+    Returns:
+        LinkCollection: Validated link collection loaded from disk.
     """
     if not path.exists():
         data = _empty_link_collection()
@@ -156,7 +160,12 @@ def _init_links_file(path: Path) -> LinkCollection:
 
 
 def load_links() -> ApplicationData:
-    """Load public and private links from separate JSON files."""
+    """Load public and private links from separate JSON files.
+
+    Returns:
+        ApplicationData: Aggregated application data for public and private links.
+
+    """
     private_links = _init_links_file(SETTINGS.private_links_file)
     pro_links = _init_links_file(SETTINGS.public_links_file)
     return ApplicationData(private=private_links, public=pro_links)

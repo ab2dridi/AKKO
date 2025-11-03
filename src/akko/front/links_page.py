@@ -38,7 +38,15 @@ _NEW_CATEGORY_OPTION = object()
 
 
 def _format_category_option(option: object) -> str:
-    """Format category options for the select box display."""
+    """Format category options for the select box display.
+
+    Args:
+        option (object): Raw option returned by the select box.
+
+    Returns:
+        str: User-friendly label rendered in the UI.
+
+    """
     if option == _NEW_CATEGORY_OPTION:
         return "(New category)"
     return _display_category(cast(str, option))
