@@ -8,7 +8,7 @@
   description = "AKKO (Access Key Keep Ownership) is a simple, secure, and serverless password and credential manager designed to keep your data under your control."
   readme = "README.md"
   requires-python = ">=3.10"
-  dynamic = ["dependencies"]
+  dynamic = ["dependencies", "optional-dependencies"]
 
   [project.scripts]
     akko-launch = "akko.launcher:launch"
@@ -19,12 +19,14 @@
   [tool.hatch.metadata.hooks.requirements_txt]
     files = ["requirements.txt"]
 
+    [tool.hatch.metadata.hooks.requirements_txt.optional-dependencies]
+      dev = ["requirements-dev.in"]
+
 [tool.hatch.build.targets.wheel]
   packages = ["src/akko"]
 
   [tool.hatch.build.targets.wheel.sources]
     "src" = ""
-
 
 [tool.mypy]
   python_version = "3.10"
@@ -57,18 +59,18 @@
   [[tool.mypy.overrides]]
     module = "orjson"
     ignore_missing_imports = true
+
   [[tool.mypy.overrides]]
     module = "tests.*"
     disallow_untyped_defs = false
     warn_return_any = true
-# Configuration pytest
+
 [tool.pytest.ini_options]
   minversion = "6.0"
   addopts = "-ra -q --strict-markers --cov=akko --cov-report=term-missing:skip-covered --cov-report=html"
   testpaths = ["tests"]
   pythonpath = ["src"]
 
-# Configuration coverage
 [tool.coverage.run]
   branch = true
   source = ["src/akko"]
