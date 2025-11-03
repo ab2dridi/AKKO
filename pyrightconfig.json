@@ -1,0 +1,30 @@
+{
+  "exclude": [
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/.mypy_cache"
+  ],
+  "executionEnvironments": [
+    {
+      "reportMissingTypeStubs": "none",
+      "reportPrivateUsage": "none",
+      "reportUnusedFunction": "none",
+      "reportUnusedImport": "none",
+      "root": "tests"
+    },
+    {
+      "root": "src"
+    }
+  ],
+  "ignore": [],
+  "include": [
+    "src",
+    "tests"
+  ],
+  "reportMissingImports": "warning",
+  "reportPrivateUsage": "error",
+  "reportUnusedImport": "warning",
+  "typeCheckingMode": "strict",
+  "venv": ".venv",
+  "venvPath": ".venv"
+}

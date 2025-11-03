@@ -111,7 +111,7 @@ exclude = [
 
 [lint.per-file-ignores]
   # Tests can use assert and have less strict docstrings
-  "test_*.py" = ["ANN001", "ANN201", "D103", "S101"]
+  "test_*.py" = ["ANN001", "ANN201", "D103", "S101", "SLF001"]
   "**/tests/**/*.py" = ["ANN001", "ANN201", "D103", "S101"]
   # Scripts can use prints
   "scripts/*.py" = ["T201", "T203"]
