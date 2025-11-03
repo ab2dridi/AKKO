@@ -231,3 +231,8 @@ poetry.toml
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,macos,dotenv,python
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
+
+data/encrypted/credentials.enc
+data/private/private_links.json
+config.json
+.gitlab/**
