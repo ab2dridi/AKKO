@@ -69,11 +69,12 @@ def _filter_credentials(
         list[CredentialPayload]: Credentials matching the query and type.
 
     """
-    filtered = [
-        item
-        for item in data
-        if selected_type is None or item[0].strip() == selected_type
-    ]
+    filtered: list[CredentialPayload] = []
+    for item in data:
+        normalized_type = TYPE_TO_CLEAN_NAME.get(item[0], item[0].strip())
+        if selected_type is not None and normalized_type != selected_type:
+            continue
+        filtered.append(item)
 
     if not query:
         return filtered
