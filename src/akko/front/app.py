@@ -142,5 +142,5 @@ st.caption(
 )
 st.caption(
     "💾 credentials.enc → private/ | private_links.json "
-    "/ pro_links.json → separate files"
+    "/ public_links.json → separate files"
 )
