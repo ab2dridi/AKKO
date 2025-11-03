@@ -61,13 +61,14 @@
 # Configuration pytest
 [tool.pytest.ini_options]
   minversion = "6.0"
-  addopts = "-ra -q --strict-markers"
+  addopts = "-ra -q --strict-markers --cov=akko --cov-report=term-missing:skip-covered --cov-report=html"
   testpaths = ["tests"]
   pythonpath = ["src"]
 
 # Configuration coverage
 [tool.coverage.run]
-  source = ["src"]
+  branch = true
+  source = ["src/akko"]
   omit = ["*/tests/*"]
 
 [tool.coverage.report]
@@ -81,3 +82,11 @@
     "raise AssertionError",
     "raise NotImplementedError",
   ]
+  show_missing = true
+  skip_covered = true
+  precision = 2
+  fail_under = 0
+
+[tool.coverage.html]
+  directory = "htmlcov"
+  title = "AKKO Test Coverage"
