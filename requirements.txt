@@ -6,3 +6,4 @@ pydantic-settings>=2.3.0
 pydantic>=2.7.0
 pyperclip>=1.8.2
 streamlit>=1.38.0
+structlog>=22.1.0

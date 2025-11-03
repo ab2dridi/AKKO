@@ -2,7 +2,7 @@
 # Documentation: https://docs.astral.sh/ruff/
 
 # Rules to enable
-select = [
+lint.select = [
   # Pyflakes
   "F", # Syntax errors and logical errors
   # pycodestyle
@@ -69,7 +69,7 @@ select = [
 ]
 
 # Rules to ignore
-ignore = [
+lint.ignore = [
   # Missing docstring for public modules (too strict for us)
   "D100",
   # Checks for long exception messages that are not defined in the exception class itself.
@@ -109,7 +109,7 @@ exclude = [
   "venv",
 ]
 
-[per-file-ignores]
+[lint.per-file-ignores]
   # Tests can use assert and have less strict docstrings
   "test_*.py" = ["ANN001", "ANN201", "D103", "S101"]
   "**/tests/**/*.py" = ["ANN001", "ANN201", "D103", "S101"]
@@ -119,16 +119,16 @@ exclude = [
   # __init__.py files can be docstring-free
   "__init__.py" = ["D104"]
 
-[flake8-quotes]
+[lint.flake8-quotes]
   # Use double quotes
   docstring-quotes = "double"
   inline-quotes = "double"
 
-[pydocstyle]
+[lint.pydocstyle]
   # Google docstring convention
   convention = "google"
 
-[flake8-annotations]
+[lint.flake8-annotations]
   # Do not require annotations for self and cls
   suppress-dummy-args = true
   suppress-none-returning = true
