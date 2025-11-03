@@ -57,7 +57,10 @@
   [[tool.mypy.overrides]]
     module = "orjson"
     ignore_missing_imports = true
-
+  [[tool.mypy.overrides]]
+    module = "tests.*"
+    disallow_untyped_defs = false
+    warn_return_any = true
 # Configuration pytest
 [tool.pytest.ini_options]
   minversion = "6.0"
