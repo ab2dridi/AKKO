@@ -1,11 +1,11 @@
 import base64
 import hashlib
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias, cast
 
 import orjson
 from cryptography.fernet import Fernet, InvalidToken
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 
 from akko.settings import get_settings
 from akko.typing.credentials import CredentialUnion, credential_registry
@@ -16,7 +16,14 @@ SETTINGS = get_settings()
 
 # --- Encryption helpers ---
 def derive_key(master_password: str) -> bytes:
-    """Derive a Fernet-compatible key from the given master password."""
+    """Derive a Fernet-compatible key from the given master password.
+
+    Args:
+        master_password (str): The master password provided by the user.
+
+    Returns:
+        bytes: A base64-encoded key suitable for Fernet.
+    """
     key = hashlib.sha256(master_password.encode("utf-8")).digest()
     return base64.urlsafe_b64encode(key)
 
@@ -62,34 +69,79 @@ def load_data(
         return result
 
 
+JSONScalar: TypeAlias = str | int | float | bool | None
+JSONValue: TypeAlias = JSONScalar | list["JSONValue"] | dict[str, "JSONValue"]
+
+
+def _to_serializable(value: object) -> JSONValue:
+    """Convert nested Pydantic objects to JSON-serializable payloads.
+
+    Args:
+        value (object): The value to convert.
+
+    Returns:
+        JSONValue: The JSON-serializable representation of the input value.
+    """
+    if isinstance(value, SecretStr):
+        return value.get_secret_value()
+    if isinstance(value, dict):
+        dict_value = cast(dict[object, object], value)
+        result: dict[str, JSONValue] = {}
+        for key, val in dict_value.items():
+            result[str(key)] = _to_serializable(val)
+        return result
+    if isinstance(value, list):
+        list_value = cast(list[object], value)
+        return [_to_serializable(item) for item in list_value]
+    if isinstance(value, tuple):
+        tuple_value = cast(tuple[object, ...], value)
+        return [_to_serializable(item) for item in tuple_value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
+
+
 def save_data(
     data: list[tuple[str, CredentialUnion]],
     fernet: Fernet,
     file_path: Path = SETTINGS.credentials_file,
 ) -> None:
-    """Encrypt and save credentials data to disk.
+    """Encrypt and persist credential entries to disk.
 
     Args:
-        data (list[CredentialUnion]): List of credential entries.
-        fernet (Fernet): Fernet instance initialized with the derived key.
-        file_path (Path): Path to the data file.
-
+        data: Sequence of credential type names and their validated models.
+        fernet: Active Fernet instance used for symmetric encryption.
+        file_path: Destination JSON file path for the encrypted payload.
     """
-    payload = orjson.dumps(data, option=orjson.OPT_INDENT_2)
+    serializable: list[tuple[str, dict[str, JSONValue]]] = []
+    for credential_type, credential in data:
+        serialized = cast(
+            dict[str, JSONValue], _to_serializable(credential.model_dump())
+        )
+        serializable.append((credential_type, serialized))
+    payload = orjson.dumps(serializable, option=orjson.OPT_INDENT_2)
     encrypted = fernet.encrypt(payload)
     file_path.write_bytes(encrypted)
 
 
 # --- Links management ---
 def _empty_link_collection() -> LinkCollection:
-    """Return an empty link collection."""
+    """Return an empty link collection.
+
+    Returns:
+        LinkCollection: An empty LinkCollection instance.
+    """
     category_list: list[str] = []
     link_list: list[LinkEntry] = []
     return LinkCollection(categories=category_list, links=link_list)
 
 
 def _init_links_file(path: Path) -> LinkCollection:
-    """Create an empty link file if it doesn't exist."""
+    """Create an empty link file if it doesn't exist.
+
+    Args:
+        path (Path): Path to the link collection JSON file.
+    """
     if not path.exists():
         data = _empty_link_collection()
         path.write_text(data.model_dump_json(indent=2), encoding="utf-8")
@@ -111,7 +163,11 @@ def load_links() -> ApplicationData:
 
 
 def save_links(links: ApplicationData) -> None:
-    """Save public and private links into their respective JSON files."""
+    """Save public and private links into their respective JSON files.
+
+    Args:
+        links (ApplicationData): Application data containing link collections.
+    """
     links.private.model_dump_json(indent=2, ensure_ascii=False)
     SETTINGS.private_links_file.write_text(
         links.private.model_dump_json(indent=2, ensure_ascii=False)

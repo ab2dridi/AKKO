@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+html,
+body,
+[class*="css"] {
+  font-family: "Inter", sans-serif;
+}
+div.stButton > button {
+  border-radius: 10px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #00c9a7, #4f46e5);
+  color: white;
+  border: none;
+  transition: 0.3s ease-in-out;
+}
+div.stButton > button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+section[data-testid="stSidebar"] {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+/* Centrer le header dans la sidebar */
+.sidebar-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+.sidebar-sub {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+.sidebar-quote {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.6rem;
+}
+.sidebar-divider {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0.5rem 0 1rem 0;
+}

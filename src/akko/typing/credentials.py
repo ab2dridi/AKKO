@@ -114,6 +114,7 @@ class GitLabTokenCredential(BaseModel):
 CredentialUnion: TypeAlias = (
     WebsiteCredential | LinuxServerCredential | GitLabTokenCredential
 )
+CredentialPayload: TypeAlias = tuple[str, CredentialUnion]
 BaseCredentialType = type[CredentialUnion]
 
 NormalizedCredentialName = Literal["Website", "Linux Server", "GitLab Token"]
