@@ -55,7 +55,7 @@ def _format_category_option(option: object) -> str:
 def _render_add_link_toggle() -> None:
     """Render the toggle button that expands or collapses the link form."""
     st.session_state["show_form_links"] = st.session_state.get("show_form_links", False)
-    if st.button("➕ Add link", type="primary"):  # noqa: RUF001
+    if st.button("Toggle add link", type="primary"):
         st.session_state["show_form_links"] = not st.session_state["show_form_links"]
 
 

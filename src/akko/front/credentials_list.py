@@ -45,7 +45,13 @@ def _render_search_box() -> str:
 def _render_type_filter() -> NormalizedCredentialName | None:
     """Render the type filter radio buttons and return the chosen type."""
     st.markdown("### 🔍 Filter by type")
-    selection = st.radio("", TYPE_ORDER, horizontal=True, index=len(TYPE_ORDER) - 1)
+    selection = st.radio(
+        "Credential type",
+        TYPE_ORDER,
+        horizontal=True,
+        index=len(TYPE_ORDER) - 1,
+        label_visibility="collapsed",
+    )
     mapped = TYPE_FILTER_MAP.get(selection)
     if mapped is None:
         return None

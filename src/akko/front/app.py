@@ -121,7 +121,7 @@ if page == "🔐 Credentials":
 
     if "show_form_creds" not in st.session_state:
         st.session_state["show_form_creds"] = False
-    if st.button("➕ Toggle add credential form", type="primary"):  # noqa: RUF001
+    if st.button("Toggle add credential form", type="primary"):
         st.session_state["show_form_creds"] = not st.session_state["show_form_creds"]
         update_activity()
     if st.session_state["show_form_creds"] and fernet is not None:
