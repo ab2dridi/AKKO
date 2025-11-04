@@ -45,6 +45,21 @@ def test_ensure_config_file_reuses_existing(tmp_path: Path) -> None:
     assert config_path == parent_config
 
 
+def test_ensure_config_file_uses_launch_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    template_text = _read_default_config_template()
+    launch_dir = tmp_path / "launch"
+    launch_dir.mkdir()
+
+    monkeypatch.setenv("AKKO_WORKDIR", str(launch_dir))
+
+    config_path = settings_module.ensure_config_file()
+
+    assert config_path.parent == launch_dir
+    assert config_path.read_text(encoding="utf-8") == template_text
+
+
 def test_reload_settings_raises_on_invalid_json(
     tmp_path: Path,
     mocker: MockerFixture,

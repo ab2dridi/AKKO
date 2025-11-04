@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import atexit
+import os
 from contextlib import ExitStack
 from functools import lru_cache
 from importlib import resources
@@ -34,10 +35,22 @@ _RESOURCE_STACK = ExitStack()
 atexit.register(_RESOURCE_STACK.close)
 
 
+@lru_cache(maxsize=1)
 def _resources_dir() -> Path:
     """Return the on-disk path to the bundled resources directory."""
     resource = resources.files("akko") / "resources"
     return _RESOURCE_STACK.enter_context(resources.as_file(resource))
+
+
+def _launch_root() -> Path:
+    """Return the directory where the launcher was invoked."""
+    override = os.environ.get("AKKO_WORKDIR")
+    if override:
+        candidate = Path(override).expanduser()
+        if candidate.exists() and not candidate.is_dir():
+            return candidate.parent
+        return candidate
+    return Path.cwd()
 
 
 def _default_config_template() -> str:
@@ -86,7 +99,7 @@ def ensure_config_file(start_dir: Path | None = None) -> Path:
     Returns:
         Path: The path to the configuration file.
     """
-    base_dir = start_dir or Path.cwd()
+    base_dir = start_dir or _launch_root()
     existing = _find_existing_config(base_dir)
     if existing is not None:
         return existing

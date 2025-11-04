@@ -1,5 +1,6 @@
 """Launcher module for AKKO application."""
 
+import os
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -42,6 +43,7 @@ def launch() -> None:
     """Launch the AKKO Streamlit application."""
     package_path = find_package_path()
     app_path = (package_path / "front" / "app.py").resolve()
+    launch_cwd = Path.cwd()
 
     if not app_path.is_file() or package_path not in app_path.parents:
         gracefully_exit("Streamlit entrypoint not found in trusted location.")
@@ -54,10 +56,14 @@ def launch() -> None:
         return
 
     try:
+        env = os.environ.copy()
+        env["AKKO_WORKDIR"] = str(launch_cwd)
         # Launch Streamlit from the app directory
         subprocess.run(  # noqa: S603 - command is built from trusted inputs only
             command,
             check=True,
+            cwd=str(launch_cwd),
+            env=env,
         )
 
     except FileNotFoundError as e:

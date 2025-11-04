@@ -58,6 +58,9 @@ def test_launch_runs_streamlit_when_app_exists(
     app_dir.mkdir(parents=True)
     (app_dir / "app.py").write_text("print('hello')", encoding="utf-8")
 
+    launch_cwd = tmp_path / "workspace"
+    launch_cwd.mkdir()
+    mocker.patch("akko.launcher.Path.cwd", return_value=launch_cwd)
     mocker.patch("akko.launcher.find_package_path", return_value=package_dir)
     build_mock = mocker.patch(
         "akko.launcher._build_streamlit_command",
@@ -70,7 +73,11 @@ def test_launch_runs_streamlit_when_app_exists(
 
     build_mock.assert_called_once()
     assert build_mock.call_args.args[0] == (package_dir / "front" / "app.py").resolve()
-    run_mock.assert_called_once_with(["cmd"], check=True)
+    run_mock.assert_called_once()
+    assert run_mock.call_args.args == (["cmd"],)
+    assert run_mock.call_args.kwargs["check"] is True
+    assert run_mock.call_args.kwargs["cwd"] == str(launch_cwd)
+    assert run_mock.call_args.kwargs["env"]["AKKO_WORKDIR"] == str(launch_cwd)
     exit_mock.assert_not_called()
 
 
