@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import atexit
+from contextlib import ExitStack
 from functools import lru_cache
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -27,29 +30,30 @@ def find_package_path() -> Path:
 CONFIG_FILENAME = "config.json"
 
 
+_RESOURCE_STACK = ExitStack()
+atexit.register(_RESOURCE_STACK.close)
+
+
 def _resources_dir() -> Path:
-    """Get the resources folder path.
-
-    Returns:
-        Path: the resources folder path
-    """
-    return find_package_path() / "resources"
+    """Return the on-disk path to the bundled resources directory."""
+    resource = resources.files("akko") / "resources"
+    return _RESOURCE_STACK.enter_context(resources.as_file(resource))
 
 
-def _default_config_template() -> Path:
-    """Get the default config path.
+def _default_config_template() -> str:
+    """Load the default configuration template text.
 
     Raises:
         FileNotFoundError: default config file is missing
 
     Returns:
-        Path: the path to the default config file
+        str: The contents of the default configuration template.
     """
-    resources_dir = _resources_dir()
+    resource_root = _resources_dir()
     for name in ("default-config.json", "default_config.json"):
-        candidate = resources_dir / name
-        if candidate.exists():
-            return candidate
+        candidate = resource_root.joinpath(name)
+        if candidate.is_file():
+            return candidate.read_text(encoding="utf-8")
     raise FileNotFoundError("Default configuration template not found.")
 
 
@@ -88,8 +92,9 @@ def ensure_config_file(start_dir: Path | None = None) -> Path:
         return existing
 
     destination = base_dir / CONFIG_FILENAME
-    template_path = _default_config_template()
-    destination.write_text(template_path.read_text(encoding="utf-8"), encoding="utf-8")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    template_content = _default_config_template()
+    destination.write_text(template_content, encoding="utf-8")
     return destination
 
 
