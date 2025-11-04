@@ -1,160 +1,219 @@
 # 🛡️ AKKO
 
-**AKKO** (Access Key Keep Ownership) is a **simple, secure, and serverless** password and credential manager designed to keep your data under your control.  
-Built with [Streamlit](https://streamlit.io/), it focuses on **simplicity**, **privacy**, and **data sovereignty**.
+**AKKO** (Access Key Keep Ownership) is a **simple, secure, and serverless** password and credential manager designed to keep your data under your control. Built with [Streamlit](https://streamlit.io/), it focuses on **simplicity**, **privacy**, and **data sovereignty**. AKKO now targets **Python 3.10+**.
 
 ---
 
 ## ✨ Main Features
 
-- Clean and intuitive interface (no endless menus or clutter)  
-- Local encryption using `cryptography.Fernet`  
-- Smart search and filtering of credentials  
-- Quick link and token management  
-- 100% offline: no external servers or databases  
+- Clean and intuitive interface without clutter
+- Local encryption with `cryptography.Fernet`
+- Smart search, filtering, and quick link/token management
+- 100% offline: no external servers or databases
 - Auto-lock after inactivity for extra security
+- Typed configuration powered by `pydantic-settings`
 
 ---
 
-## 🚀 Launching the App
+## ⚙️ Requirements
 
-### 🖱️ Easiest Way
-
-Just **double-click** the script `akko.py`.  
-The app will open automatically in your browser (usually at [http://localhost:8501](http://localhost:8501)).
-
-> ⚠️ No admin rights required.
+- Python 3.10 or newer available on your PATH
+- A modern browser compatible with Streamlit
+- Optional tooling: [uv](https://docs.astral.sh/uv/) for ultra-fast installs, [pipx](https://pipx.pypa.io/) for isolated CLI usage
 
 ---
 
-### 🧑‍💻 Manual Launch (if needed)
+## � Quick Launch with `akko-launch`
 
-If you prefer the old-school terminal way:
+`akko-launch` is the packaged command-line entry point that validates and starts the Streamlit UI from a trusted location.
+
+### with uv
 
 ```bash
-cd path/to/project
-python -m streamlit run app.py
+# Install the local package, then launch it with uv run
+uv pip install .
+uv run akko-launch
 ```
+
+### with pipx
+
+```bash
+# Install AKKO with pipx, then launch the interface
+pipx install .
+akko-launch
+```
+
+### with plain virtual environement
+
+```bash
+python -m venv .venv-akko
+source .venv-akko/bin/activate        # macOS/Linux
+# .venv-akko\Scripts\activate         # Windows PowerShell
+pip install .
+akko-launch
+```
+
+Prefer a manual fallback? You can always execute `python -m akko.launcher` from an environment where AKKO is installed.
 
 ---
 
-## 📦 Installation
+## 📦 Local Installation
 
-Make sure you have **Python 3.9+** installed.  
-Then, from your project folder:
+### Classic virtual environment
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate        # On macOS/Linux
+# .venv\Scripts\activate         # On Windows PowerShell
+pip install --upgrade pip
 pip install -r requirements.txt
+akko-launch
 ```
 
-> If you can’t install globally, the local virtual environment works perfectly fine.  
-> No admin privileges are required.
+### uv workflow
+
+```bash
+uv sync                          # Reads pyproject.toml and requirements.txt
+uv run akko-launch               # Launch the UI inside the managed environment
+```
+
+Add development tooling with `uv sync --extra dev` or install optional dependencies via `pip install .[dev]`.
+
+---
+
+## 📦 Dependency Management
+
+**Runtime (`requirements.txt`)**
+
+```text
+cryptography>=43.0.0
+orjson>=3.9.1
+pydantic-settings>=2.3.0
+pydantic>=2.7.0
+pyperclip>=1.8.2
+streamlit>=1.38.0
+structlog>=23.1.0
+```
+
+Install these with `pip install -r requirements.txt` or `uv pip install -r requirements.txt`. Update the file whenever a runtime dependency changes to keep packaging metadata in sync.
+
+**Development (`requirements-dev.in`)**
+
+`requirements-dev.in` is the curated list of tooling used during development (formatters, linters, docs, testing, packaging). Hatch's `requirements_txt` metadata hook exposes it as the `[dev]` optional dependency set. Add new tools here, then install them with one of the following:
+
+- `uv pip install -r requirements-dev.in`
+- `uv sync --extra dev`
+- `pip install .[dev]`
+
+This keeps the shipped runtime minimal while letting contributors bootstrap a full workstation in one command.
 
 ---
 
 ## 🧰 Useful Files
 
-| File | Description |
-|------|--------------|
-| `app.py` | Main entry point of the app |
-| `modules/` | Contains the pages: credentials, links, etc. |
-| `utils/` | Security, encryption, and helper functions |
-| `akko.py` | Launch script (no console, no admin) |
-| `streamlit.log` | Application log file |
-| `config.yaml` | Configuration (timeouts, preferences, etc.) |
-| `requirements.txt` | List of dependencies required to run AKKO |
+| Path                                     | Description                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------ |
+| `src/akko/launcher.py`                   | Implements the `akko-launch` CLI and guards the Streamlit invocation.    |
+| `src/akko/front/app.py`                  | Main Streamlit application rendered in the browser.                      |
+| `src/akko/core/security.py`              | Encryption, hashing, and credential safety helpers.                      |
+| `src/akko/settings.py`                   | Loads and validates configuration from `config.json`.                    |
+| `src/akko/resources/default-config.json` | Template copied whenever `config.json` is missing.                       |
+| `config.json`                            | Project-level configuration generated on first launch.                   |
+| `data/encrypted/`                        | Encrypted credentials vault (contains `credentials.enc`).                |
+| `data/private/`                          | Private link definitions (`private_links.json`).                         |
+| `data/public/`                           | Public/shared links (`public_links.json`) and related assets.            |
 
 ---
 
-## 📄 requirements.txt
+## 💾 Data & Configuration
 
-Below is the recommended dependency list for AKKO:
+### Storage layout
 
-```txt
-streamlit>=1.38.0
-cryptography>=43.0.0
-pandas>=2.2.0
-PyYAML>=6.0.2
-watchdog>=4.0.0
-requests>=2.32.0
-```
-
-You can install them all with:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 💾 Data Storage & First-Time Setup
-
-When you run **AKKO** for the first time, the app automatically creates two main folders inside your project directory — one for **private encrypted credentials**, and one for **public assets and professional links**.
-
-```
+```text
 AKKO/
- ├── private/
- │    └── data/
- │         ├── credentials.enc        → encrypted credentials (passwords, tokens, SSH keys)
- │         └── private_links.json     → private or internal links (not encrypted, only tagged as private)
- │
- ├── public/
- │    └── data/
- │         ├── pro_links.json         → professional or public resources (shared or unencrypted)
- │         └── icons/                 → icons and static assets used by the UI
+ └── data/
+   ├── encrypted/
+   │    └── credentials.enc        → encrypted credentials (passwords, tokens, SSH keys)
+   ├── private/
+   │    └── private_links.json     → private or internal links (stored in clear text)
+   └── public/
+     └── public_links.json      → public or shareable resources (plain JSON)
 ```
 
-### 🧩 How It Works
-- **Credentials** are the only data encrypted on disk, stored in `credentials.enc` using your master password and `cryptography.Fernet`.  
-- **Private links** are stored in clear text but tagged as private, allowing you to filter and separate personal or internal resources without encrypting them.  
-- **Public links** and icons are plain JSON/static files used by the UI and can safely be shared or versioned.  
-- No standalone encryption key file is ever stored — the key is generated dynamically from your master password each session.
+The exact locations are controlled by `config.json`, so you can relocate the vault by editing the corresponding paths.
 
-### 🔐 Your Master Password
-On the first launch, AKKO prompts you to create a **master password**.  
-This password:
-- is used exclusively to encrypt and decrypt your credentials;  
-- is **never stored**, transmitted, or recoverable;  
-- must be remembered, since losing it means losing access to your credentials file.
+### Configuration file
 
-### 📂 Moving or Backing Up Data
-To back up or move AKKO to another machine:
-1. Copy the entire `private/data/` folder.  
-2. Paste it into the same location on the new environment.  
-3. Launch AKKO and enter your master password to regain access.
+- At startup, `akko.settings.ensure_config_file()` looks for `config.json` in the current directory or its parents.
+- If none is found, the default template from `src/akko/resources/default-config.json` is copied next to the launcher.
+- Configuration fields are validated with `pydantic-settings`; invalid values lead to a descriptive error.
 
-`public/data/` can be copied or included in version control — it contains no secrets.
+Example excerpt:
 
-### ⚠️ Important Notes
-- The `private/` folder is **excluded from Git** via `.gitignore`, ensuring credentials are never pushed online.  
-- `private_links.json` is plain text: handle it responsibly if it contains internal URLs.  
-- If you delete `private/data/`, AKKO will recreate a clean structure automatically at the next launch.
+```json
+{
+  "data_paths": {
+    "credentials": "data/encrypted/credentials.enc",
+    "private_links": "data/private/private_links.json",
+    "public_links": "data/public/public_links.json"
+  },
+  "security": {
+    "auto_lock_minutes": 5,
+    "hash_check": true
+  }
+}
+```
+
+Relative paths are resolved from the directory that contains `config.json`. Edit the file to customize storage locations, feature flags, or theme options. Restart the app (or rerun `akko-launch`) after making changes.
+
+### Security model
+
+- **Credentials** are the only data encrypted on disk, stored in `credentials.enc` using your master password and `cryptography.Fernet`.
+- **Private links** stay in clear text but remain local to your machine.
+- **Public links** and icons are plain JSON/static assets that can be shared safely.
+- No standalone encryption key is stored anywhere — the key is derived from your master password at runtime.
+
+### Master password
+
+On the first launch, AKKO prompts you to create a **master password**. It:
+
+- encrypts and decrypts your credentials,
+- is never stored or transmitted,
+- cannot be recovered by the application.
+
+Lose the password and the encrypted data becomes unreachable.
+
+### Moving or backing up data
+
+1. Copy your `config.json` and the entire `data/` directory.
+2. Paste them into the same locations on the new machine.
+3. Launch AKKO and provide the same master password.
+
+`data/public/` can be copied or versioned freely.
+
+### Important notes
+
+- Keep `data/encrypted/credentials.enc` out of commits to avoid leaking secrets.
+- Keep a secure backup of `credentials.enc` if you rely on AKKO for mission-critical data.
+- Delete the `data/` directory to start fresh; AKKO will recreate the structure on the next launch.
 
 ---
 
 ## 🧯 Troubleshooting
 
-- **The app doesn’t start?**  
-  → Check that Python is installed and accessible.  
-  → Try `python -m streamlit --version`.
-
-- **“Port already in use”?**  
-  → Close other Streamlit sessions or change the port in `akko.py`.
-
-- **`cryptography` error?**  
-  → Install the missing dependency manually:  
-    ```bash
-    pip install cryptography
-    ```
+- `akko-launch: command not found` → Install the package locally (`pip install -r requirements.txt`) or run it via `uv tool run akko-launch`.
+- `Configuration validation failed` → Review `config.json`; ensure field names and value types match the template.
+- `Streamlit entrypoint not found in trusted location` → The package layout differs from expectations; reinstall AKKO or avoid moving files out of `src/akko/front/`.
+- `Port already in use` → Pick another port by running `STREAMLIT_SERVER_PORT=8502 akko-launch` (or restart the conflicting session).
+- `ModuleNotFoundError: cryptography` → Reinstall dependencies with `pip install -r requirements.txt` or `uv sync`.
+- `Python 3.9 detected` → Upgrade your interpreter to Python 3.10+ before launching.
 
 ---
 
 ## 🔒 Security
 
-- Data is **encrypted locally** before saving.  
-- The encryption key is derived from your master password (never stored in plain text).  
+- Data is **encrypted locally** before saving.
+- The encryption key is derived from your master password (never stored in plain text).
 - Auto-lock prevents unauthorized access after inactivity.
 
 > AKKO collects **no data**, locally or remotely.
@@ -174,18 +233,23 @@ No cloud, no tracking, no nonsense — just your vault and your control.
 ## 📸 Screenshots
 
 ### 🔐 First Authentication
+
 ![First Authentication](docs/first_auth.png)
 
 ### ➕ Add Credentials
+
 ![Add Credentials](docs/add_credentials.png)
 
 ### 📂 View Stored Credentials
+
 ![Show Credentials](docs/show_credentials.png)
 
 ### 🌐 Add a Link
+
 ![Add Link](docs/add_link.png)
 
 ### 🔗 View Links
+
 ![Show Links](docs/show_links.png)
 
 ---

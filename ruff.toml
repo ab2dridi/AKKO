@@ -1,0 +1,134 @@
+# Ruff configuration for AKKO
+# Documentation: https://docs.astral.sh/ruff/
+
+# Rules to enable
+lint.select = [
+  # Pyflakes
+  "F", # Syntax errors and logical errors
+  # pycodestyle
+  "E", # PEP 8 style errors
+  "W", # PEP 8 style warnings
+  # McCabe complexity
+  "C90", # Cyclomatic complexity
+  # isort
+  "I", # Import sorting
+  # pydocstyle
+  "D", # Function/class documentation
+  # pyupgrade
+  "UP", # Python code modernization
+  # flake8-bugbear
+  "B", # Potential bugs and anti-patterns
+  # flake8-simplify
+  "SIM", # Code simplifications
+  # flake8-comprehensions
+  "C4", # Comprehension improvements
+  # flake8-pie
+  "PIE", # Miscellaneous improvements
+  # flake8-return
+  "RET", # Return optimizations
+  # flake8-self
+  "SLF", # Private attribute access
+  # flake8-unused-arguments
+  "ARG", # Unused arguments
+  # flake8-use-pathlib
+  "PTH", # Use pathlib
+  # flake8-quotes
+  "Q", # Quote style
+  # flake8-annotations
+  "ANN", # Type annotations
+  # flake8-async
+  "ASYNC", # Asynchronous code
+  # flake8-bandit
+  "S", # Security
+  # flake8-boolean-trap
+  "FBT", # Boolean traps
+  # flake8-import-conventions
+  "ICN", # Import conventions
+  # flake8-logging-format
+  "G", # Log format
+  # flake8-no-pep420
+  "INP", # Modules without __init__.py
+  # flake8-print
+  "T20", # Print statements
+  # flake8-pytest-style
+  "PT", # Pytest style
+  # flake8-raise
+  "RSE", # Exception style
+  # flake8-tidy-imports
+  "TID", # Clean imports
+  # tryceratops
+  "TRY", # Exception handling
+  # flynt
+  "FLY", # f-strings
+  # perflint
+  "PERF", # Performance
+  # refurb
+  "FURB", # Refactoring
+  # Ruff-specific
+  "RUF", # Ruff-specific rules
+]
+
+# Rules to ignore
+lint.ignore = [
+  # Missing docstring for public modules (too strict for us)
+  "D100",
+  # Checks for long exception messages that are not defined in the exception class itself.
+  "TRY003",
+]
+
+# Maximum line length (compatible with Black)
+line-length = 88
+
+# Supported Python targets
+target-version = "py310"
+
+# Files to exclude
+exclude = [
+  "*.egg-info",
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pycache__",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
+]
+
+[lint.per-file-ignores]
+  # Tests can use assert and have less strict docstrings
+  "test_*.py" = ["ANN001", "ANN201", "D103", "S101", "SLF001"]
+  "**/tests/**/*.py" = ["ANN001", "ANN201", "D103", "S101"]
+  # Scripts can use prints
+  "scripts/*.py" = ["T201", "T203"]
+  "launch_*.py" = ["T201", "T203"]
+  # __init__.py files can be docstring-free
+  "__init__.py" = ["D104"]
+
+[lint.flake8-quotes]
+  # Use double quotes
+  docstring-quotes = "double"
+  inline-quotes = "double"
+
+[lint.pydocstyle]
+  # Google docstring convention
+  convention = "google"
+
+[lint.flake8-annotations]
+  # Do not require annotations for self and cls
+  suppress-dummy-args = true
+  suppress-none-returning = true

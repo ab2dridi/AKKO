@@ -1,0 +1,97 @@
+[build-system]
+  requires = ["hatch-requirements-txt", "hatchling"]
+  build-backend = "hatchling.build"
+
+[project]
+  name = "akko"
+  version = "0.1.0"
+  description = "AKKO (Access Key Keep Ownership) is a simple, secure, and serverless password and credential manager designed to keep your data under your control."
+  readme = "README.md"
+  requires-python = ">=3.10"
+  dynamic = ["dependencies", "optional-dependencies"]
+
+  [project.scripts]
+    akko-launch = "akko.launcher:launch"
+
+[tool.hatch.metadata]
+  allow-direct-references = true
+
+  [tool.hatch.metadata.hooks.requirements_txt]
+    files = ["requirements.txt"]
+
+    [tool.hatch.metadata.hooks.requirements_txt.optional-dependencies]
+      dev = ["requirements-dev.in"]
+
+[tool.hatch.build.targets.wheel]
+  packages = ["src/akko"]
+
+  [tool.hatch.build.targets.wheel.sources]
+    "src" = ""
+
+[tool.mypy]
+  python_version = "3.10"
+  warn_return_any = true
+  warn_unused_configs = true
+  disallow_untyped_defs = false
+  disallow_incomplete_defs = false
+  check_untyped_defs = true
+  disallow_untyped_decorators = false
+  no_implicit_optional = true
+  warn_redundant_casts = true
+  warn_unused_ignores = true
+  warn_no_return = true
+  warn_unreachable = true
+  strict_equality = true
+  plugins = ["pydantic.mypy"]
+
+  [[tool.mypy.overrides]]
+    module = "streamlit.*"
+    ignore_missing_imports = true
+
+  [[tool.mypy.overrides]]
+    module = "pyperclip.*"
+    ignore_missing_imports = true
+
+  [[tool.mypy.overrides]]
+    module = "cryptography.*"
+    ignore_missing_imports = true
+
+  [[tool.mypy.overrides]]
+    module = "orjson"
+    ignore_missing_imports = true
+
+  [[tool.mypy.overrides]]
+    module = "tests.*"
+    disallow_untyped_defs = false
+    warn_return_any = true
+
+[tool.pytest.ini_options]
+  minversion = "6.0"
+  addopts = "-ra -q --strict-markers --cov=akko --cov-report=term-missing:skip-covered --cov-report=html"
+  testpaths = ["tests"]
+  pythonpath = ["src"]
+
+[tool.coverage.run]
+  branch = true
+  source = ["src/akko"]
+  omit = ["*/tests/*"]
+
+[tool.coverage.report]
+  exclude_lines = [
+    "def __repr__",
+    "if 0:",
+    "if __name__ .__main__.:",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "pragma: no cover",
+    "raise AssertionError",
+    "raise NotImplementedError",
+  ]
+  show_missing = true
+  skip_covered = true
+  precision = 2
+  fail_under = 0
+
+[tool.coverage.html]
+  directory = "htmlcov"
+  title = "AKKO Test Coverage"
