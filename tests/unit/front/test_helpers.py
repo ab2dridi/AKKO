@@ -9,28 +9,30 @@ import akko.front.helpers as helpers
 
 def test_try_copy_success_triggers_toast(mocker: MockerFixture) -> None:
     copy_mock = mocker.patch("akko.front.helpers.pyperclip.copy")
+    html_mock = mocker.patch("akko.front.helpers.st_html")
     toast_mock = mocker.patch("akko.front.helpers.st.toast")
     warning_mock = mocker.patch("akko.front.helpers.st.warning")
 
     helpers.try_copy("value", "Label")
 
     copy_mock.assert_called_once_with("value")
+    html_mock.assert_called_once()
     toast_mock.assert_called_once_with("Label copié dans le presse-papiers.")
     warning_mock.assert_not_called()
 
 
-def test_try_copy_failure_shows_warning(mocker: MockerFixture) -> None:
+def test_try_copy_failure_falls_back_to_client_copy(mocker: MockerFixture) -> None:
     mocker.patch("akko.front.helpers.pyperclip.copy", side_effect=RuntimeError("boom"))
+    html_mock = mocker.patch("akko.front.helpers.st_html")
     toast_mock = mocker.patch("akko.front.helpers.st.toast")
     warning_mock = mocker.patch("akko.front.helpers.st.warning")
 
     helpers.try_copy("value", "Label")
 
-    toast_mock.assert_not_called()
-    warning_mock.assert_called_once()
-    message = warning_mock.call_args.args[0]
-    assert "Label" not in message
-    assert "boom" in message
+    # JS fallback used → toast shown, no warning
+    html_mock.assert_called_once()
+    toast_mock.assert_called_once_with("Label copié dans le presse-papiers.")
+    warning_mock.assert_not_called()
 
 
 def test_find_icon_returns_matching_file(tmp_path: Path, mocker: MockerFixture) -> None:
