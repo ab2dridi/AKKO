@@ -1,0 +1,55 @@
+name: Documentation Update
+description: Request improvements or additions to AKKO documentation.
+title: "[Docs] Short summary"
+labels:
+  - documentation
+assignees: []
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation change type
+      options:
+        - Update existing content
+        - Add new documentation
+        - Fix typo or formatting
+        - Clarify procedure or workflow
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Provide a concise description of the documentation change.
+      placeholder: "Example: Add onboarding steps for credential rotation"
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Documentation scope
+      description: Specify what needs updating (README, API doc, inline comments, guides, etc.).
+      placeholder: "Example: Update `docs/pr-fix-copy-paste-front.md`"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current description or gaps
+      description: Summarise the inaccurate, missing, or unclear information.
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed change
+      description: Outline the content you want added or corrected. Include draft text if available.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Explain the benefit or risk addressed by this update.
+      placeholder: "Example: New credential flow lacks onboarding instructions"
+  - type: textarea
+    id: references
+    attributes:
+      label: References and resources
+      description: Link relevant discussions, specs, or repositories for context.

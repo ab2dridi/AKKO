@@ -1,0 +1,86 @@
+name: Feature Request
+description: Propose a new feature or improvement for AKKO.
+title: "[Feature] Short summary"
+labels:
+  - enhancement
+assignees: []
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Feature type
+      options:
+        - Net new capability
+        - Enhancement
+        - Experiment / discovery
+        - Integration
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Summarise the desired feature in a few sentences. Focus on the user value.
+      placeholder: Describe the user problem or opportunity this feature addresses.
+    validations:
+      required: true
+  - type: textarea
+    id: users
+    attributes:
+      label: Target users / personas
+      description: Who will benefit? Name personas, roles, or specific groups.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Desired outcome
+      description: Describe the impact or experience you expect once the feature is delivered.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Current experience / gap
+      description: Explain the current limitations or behaviour that prompts this request.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment or scope
+      description: Note the area of the product, environments, or user flows impacted by this feature.
+      placeholder: "Example: Credentials management flow, desktop web"
+    validations:
+      required: true
+  - type: textarea
+    id: goals
+    attributes:
+      label: Goals and success metrics
+      description: List measurable outcomes or acceptance criteria that indicate success.
+      placeholder: |
+        - Metric or KPI to improve
+        - Behavioural change to observe
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the approach, UX, or architecture you have in mind. Sketches or references welcome.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Note other options evaluated and why they were rejected.
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and risks
+      description: Identify prerequisites, external teams, or technical constraints. Highlight major risks.
+  - type: textarea
+    id: rollout
+    attributes:
+      label: Rollout plan
+      description: Outline steps for launch (phased rollout, feature flags, docs, training, etc.).
+  - type: textarea
+    id: resources
+    attributes:
+      label: References and resources
+      description: Link relevant issues, PRs, product briefs, analytics dashboards, or external docs.

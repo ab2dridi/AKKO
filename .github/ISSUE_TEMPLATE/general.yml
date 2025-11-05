@@ -1,0 +1,67 @@
+name: General Issue
+description: Share a bug report, feature request, or task for AKKO.
+title: "[Type] Short summary"
+labels: []
+assignees: []
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue type
+      options:
+        - Bug
+        - Feature
+        - Enhancement
+        - Documentation
+        - Question
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Concise description of the issue or request.
+      placeholder: What happened or what you need?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Implementation notes
+      description: For bugs, detail the steps that trigger the issue; for features, outline the desired behaviour.
+      placeholder: |
+        1. Go to …
+        2. Click …
+        3. Observe …
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: Describe what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour / Current state
+      description: What actually happens today?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment details
+      description: Share environment info (OS, Python version, AKKO version, relevant settings).
+      placeholder: macOS 14.1, Python 3.11, …
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Logs, screenshots, or references
+      description: Attach anything that helps diagnose or implement the request.
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links to related issues, pull requests, threads, or other notes.
