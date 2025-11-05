@@ -1,6 +1,6 @@
 # Summary
 
-<!-- Keep each bullet to a single sentence so humans and LLMs can scan quickly. -->
+<!-- Use "Choose a template" for bugfix/feature/docs/etc. Keep bullets short for quick scanning. -->
 
 - change:
 - reason:
