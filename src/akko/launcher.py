@@ -8,6 +8,8 @@ from pathlib import Path
 
 from akko.settings import ensure_config_file, get_settings, logger
 
+_STREAMLIT_FAILURE_MESSAGE = "Streamlit entrypoint not found in trusted location."
+
 TRUSTED_STREAMLIT_ARGS = ("-m", "streamlit", "run")
 
 
@@ -66,10 +68,12 @@ def launch() -> None:
             env=env,
         )
 
-    except FileNotFoundError as e:
-        gracefully_exit(e.__repr__())
-    except Exception as e:
-        gracefully_exit(f"Error launching AKKO: {e}")
+    except FileNotFoundError as exc:
+        logger.exception("Streamlit executable not found.", exc_info=exc)
+        gracefully_exit(_STREAMLIT_FAILURE_MESSAGE)
+    except Exception as exc:  # pragma: no cover - unexpected runtime errors
+        logger.exception("Unexpected error while launching Streamlit.", exc_info=exc)
+        gracefully_exit(_STREAMLIT_FAILURE_MESSAGE)
 
 
 if __name__ == "__main__":
