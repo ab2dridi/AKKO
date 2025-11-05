@@ -1,55 +1,64 @@
+import secrets
 from pathlib import Path
 
-import streamlit as st
+import orjson
 from streamlit.components.v1 import html as st_html
 
 from akko.settings import get_settings
 
 
-def _copy_to_clipboard_client(text: str) -> None:
+def copy_button(text: str, label: str = "Copier") -> None:
     """Copy to the browser clipboard using client-side JavaScript.
 
     This uses a tiny HTML/JS snippet rendered via Streamlit components to
     execute ``navigator.clipboard.writeText`` in the user's browser.
     """
-    # Using a minimal, height=0 component so it doesn't affect layout.
-    # The script runs on render and copies the provided text.
-    safe_text = text.replace("\\", "\\\\").replace("`", "\\`")
+    unique_id = secrets.token_hex(32)
+    safe_text_js = orjson.dumps(text).decode(encoding="utf-8")
+
     st_html(
         f"""
+        <div class="stButton">
+            <button id="copy-{unique_id}" type="button">
+                    {label}
+            </button>
+        </div>
         <script>
-        const t = `{safe_text}`;
-        if (navigator.clipboard && navigator.clipboard.writeText) {{
-            navigator.clipboard.writeText(t).catch(() => {{}});
-        }} else {{
-            // Fallback: create a temporary textarea
-            const ta = document.createElement('textarea');
-            ta.value = t;
-            document.body.appendChild(ta);
-            ta.select();
-            try {{ document.execCommand('copy'); }} catch (e) {{ /* ignore */ }}
-            document.body.removeChild(ta);
-        }}
+        (function() {{
+          const btn = document.getElementById('copy-{unique_id}');
+          const txt = {safe_text_js};
+          if (!btn) return;
+
+          btn.addEventListener('click', async () => {{
+            try {{
+              if (navigator.clipboard && navigator.clipboard.writeText) {{
+                await navigator.clipboard.writeText(txt);
+              }} else {{
+                // Fallback pour vieux navigateurs
+                const ta = document.createElement('textarea');
+                ta.value = txt;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try {{ document.execCommand('copy'); }} catch (e) {{}}
+                document.body.removeChild(ta);
+              }}
+              const old = btn.textContent;
+              btn.textContent = "Copié ✓";
+              setTimeout(() => btn.textContent = old, 1200);
+            }} catch (e) {{
+              const old = btn.textContent;
+              btn.textContent = "Échec ❌";
+              setTimeout(() => btn.textContent = old, 1500);
+            }}
+          }});
+        }})();
         </script>
         """,
-        height=0,
+        height=60,
     )
-
-
-def try_copy(text: str, label: str = "Texte") -> None:
-    """Try to copy text to clipboard with error handling (client-side only).
-
-    Args:
-        text (str): Value copied to the clipboard.
-        label (str): Human-friendly label displayed in notifications.
-
-    """
-    try:
-        _copy_to_clipboard_client(text)
-    except Exception as e:  # pragma: no cover - UI environment dependent
-        st.warning(f"Impossible de copier : {e}")
-    else:
-        st.toast(f"{label} copié dans le presse-papiers.")
 
 
 def find_icon(category: str) -> Path | None:

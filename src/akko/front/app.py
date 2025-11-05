@@ -7,17 +7,15 @@ from akko.core.security import derive_key, load_data, load_links
 from akko.front.credentials_list import show_credentials
 from akko.front.credentials_manage import add_credential
 from akko.front.links_page import show_links
-from akko.settings import find_package_path, get_settings
+from akko.settings import get_settings
 from akko.typing.credentials import CredentialUnion
 
-CSS_PATH = find_package_path() / "resources" / "app.css"
-
 # --- Load configuration ---
-settings = get_settings()
-AUTO_LOCK_MINUTES = settings.security.auto_lock_minutes
+CSS_PATH = get_settings().package_path / "resources" / "app.css"
+AUTO_LOCK_MINUTES = get_settings().security.auto_lock_minutes
 
 # --- Page setup ---
-st.set_page_config(page_title=settings.app_name, layout="wide", page_icon="🛡️")
+st.set_page_config(page_title=get_settings().app_name, layout="wide", page_icon="🛡️")
 
 # --- Custom CSS ---
 st.markdown(
@@ -28,7 +26,7 @@ st.markdown(
 # --- Sidebar Header ---
 st.sidebar.markdown(
     f"""
-    <div class='sidebar-title'>🛡️ {settings.app_name}</div>
+    <div class='sidebar-title'>🛡️ {get_settings().app_name}</div>
     <div class='sidebar-sub'>Access Key • Keep Ownership</div>
     <div class='sidebar-quote'>"Your keys. Your control. Always offline."</div>
     <div class='sidebar-divider'></div>
@@ -73,7 +71,7 @@ links = load_links()
 if page == "🔐 Credentials":
     if not st.session_state["authenticated"]:
         st.markdown(
-            f"<h2 style='text-align:center;'>🛡️ {settings.app_name}</h2>",
+            f"<h2 style='text-align:center;'>🛡️ {get_settings().app_name}</h2>",
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -138,7 +136,7 @@ elif page == "🔗 Links":
 # --- Footer ---
 st.markdown("---")
 st.caption(
-    f"🛡️ {settings.app_name} — Auto-lock after {AUTO_LOCK_MINUTES} min inactivity"
+    f"🛡️ {get_settings().app_name} — Auto-lock after {AUTO_LOCK_MINUTES} min inactivity"
 )
 st.caption(
     "💾 credentials.enc → private/ | private_links.json "

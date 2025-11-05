@@ -6,7 +6,7 @@ import streamlit as st
 from pydantic import AnyUrl, ValidationError
 
 from akko.core.security import load_links, save_links
-from akko.front.helpers import find_icon, try_copy
+from akko.front.helpers import copy_button, find_icon
 from akko.typing.security import ApplicationData, LinkCollection, LinkEntry
 
 
@@ -261,8 +261,7 @@ def _render_link_card(idx: int, link: LinkEntry, links_data: ApplicationData) ->
         if url:
             st.markdown(f"[🌐 Open link]({url})", unsafe_allow_html=True)
         st.code(url or "", language="")
-        if st.button("📋 Copy URL", key=f"copy_{idx}"):
-            try_copy(url, "URL")
+        copy_button(url, "📋 Copy URL")
         st.markdown(f"Category: *{cat}*")
 
     with cols[2]:
