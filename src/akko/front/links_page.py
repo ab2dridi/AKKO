@@ -1,6 +1,6 @@
 """Streamlit page responsible for displaying, filtering, and managing links."""
 
-from typing import cast
+import unicodedata
 
 import streamlit as st
 from pydantic import AnyUrl, ValidationError
@@ -8,6 +8,10 @@ from pydantic import AnyUrl, ValidationError
 from akko.core.security import load_links, save_links
 from akko.front.helpers import copy_button, find_icon
 from akko.typing.security import ApplicationData, LinkCollection, LinkEntry
+
+ADD_NEW_CATEGORY_LABEL = "add New category"
+_NEW_CATEGORY_OPTION = object()
+NEW_CATEGORY_LABEL = "(New category)"
 
 
 def _normalize_category(name: str) -> str:
@@ -19,7 +23,8 @@ def _normalize_category(name: str) -> str:
     Returns:
         str: The normalized category name.
     """
-    return name.strip().lower()
+    s = unicodedata.normalize("NFKC", name or "").strip().lower()
+    return " ".join(s.split())
 
 
 def _display_category(name: str) -> str:
@@ -32,24 +37,6 @@ def _display_category(name: str) -> str:
         str: The displayed category name.
     """
     return name.strip().capitalize() if name else "Other"
-
-
-_NEW_CATEGORY_OPTION = object()
-
-
-def _format_category_option(option: object) -> str:
-    """Format category options for the select box display.
-
-    Args:
-        option (object): Raw option returned by the select box.
-
-    Returns:
-        str: User-friendly label rendered in the UI.
-
-    """
-    if option == _NEW_CATEGORY_OPTION:
-        return "(New category)"
-    return _display_category(cast(str, option))
 
 
 def _render_add_link_toggle() -> None:
@@ -67,42 +54,61 @@ def _render_add_link_form(links_data: ApplicationData) -> None:
     """
     st.markdown("### 📝 New link")
 
+    categories = sorted(
+        {
+            _normalize_category(c)
+            for c in links_data.all_categories()
+            if (c or "").strip()
+        }
+    )
+    options = [NEW_CATEGORY_LABEL, *list(categories)]
+    cat_col = st.columns([2, 1], vertical_alignment="center")
+    with cat_col[0]:
+        category_choice: str = st.selectbox(
+            "Category",
+            options,
+            index=0,
+            key="addlink_category_choice",
+        )
+
+    with cat_col[1]:
+        new_cat_val = st.text_input(
+            "New category",
+            key="addlink_new_cat_input",
+            disabled=(category_choice != NEW_CATEGORY_LABEL),
+            placeholder="e.g. tutorials",
+        ).strip()
+
     with st.form("add_link", clear_on_submit=True):
-        title = st.text_input("Title")
-        url = st.text_input("URL")
-
-        cat_col = st.columns([2, 1])
-        category_options: list[object] = [
-            _NEW_CATEGORY_OPTION,
-            *links_data.all_categories(),
-        ]
-        with cat_col[0]:
-            category_choice = st.selectbox(
-                "Category",
-                category_options,
-                format_func=_format_category_option,
-            )
-        with cat_col[1]:
-            new_cat = (
-                st.text_input("New category")
-                if category_choice == _NEW_CATEGORY_OPTION
-                else ""
-            )
-
-        tag = st.radio("Visibility", ["public", "private"], horizontal=True)
+        title = st.text_input("Title", key="addlink_title")
+        url = st.text_input("URL", key="addlink_url")
+        _ = st.radio(
+            "Visibility", ["public", "private"], horizontal=True, key="addlink_tag"
+        )
         submitted = st.form_submit_button("Add")
 
-    if submitted and title and url:
-        if category_choice == _NEW_CATEGORY_OPTION:
-            final_cat = _normalize_category(new_cat)
-        else:
-            final_cat = _normalize_category(cast(str, category_choice))
+    if not submitted:
+        return
 
-        if not final_cat:
-            st.error("Please provide a category name.")
-            return
+    if category_choice == NEW_CATEGORY_LABEL:
+        final_cat = _normalize_category(new_cat_val)
+    else:
+        final_cat = _normalize_category(category_choice)
 
-        _add_link(links_data, title.strip(), url.strip(), final_cat, tag)
+    if not title or not url:
+        st.error("Please provide both a title and an URL.")
+        return
+    if not final_cat:
+        st.error("Please provide a category name.")
+        return
+
+    _add_link(
+        links_data,
+        title.strip(),
+        url.strip(),
+        final_cat,
+        st.session_state["addlink_tag"],
+    )
 
 
 def _add_link(
