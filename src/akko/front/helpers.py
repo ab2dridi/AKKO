@@ -16,13 +16,44 @@ def copy_button(text: str, label: str = "Copier") -> None:
     unique_id = secrets.token_hex(32)
     safe_text_js = orjson.dumps(text).decode(encoding="utf-8")
 
+    settings = get_settings()
+    accent = settings.theme.accent_color
+    secondary = settings.theme.secondary_color
+
     st_html(
         f"""
-        <div class="stButton">
-            <button id="copy-{unique_id}" type="button">
+        <style>
+          @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+          :root {{
+            --btn-bg-start: {accent};
+            --btn-bg-end: {secondary};
+            --btn-radius: 10px;
+          }}
+          .copy-btn {{
+            font-family: "Inter", sans-serif;
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--btn-bg-start), var(--btn-bg-end));
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: transform .3s ease-in-out, box-shadow .3s ease-in-out;
+          }}
+          .copy-btn:hover {{
+            transform: scale(1.03);
+            box-shadow: 0 4px 10px rgba(0,0,0,.1);
+          }}
+          /* optionnel: wrapper pour caler l'espacement comme st.button */
+          .copy-wrapper {{ display:inline-block; margin: .25rem 0 .25rem 0; }}
+        </style>
+
+        <div class="copy-wrapper">
+            <button id="copy-{unique_id}" type="button" class="copy-btn">
                     {label}
             </button>
         </div>
+
         <script>
         (function() {{
           const btn = document.getElementById('copy-{unique_id}');
