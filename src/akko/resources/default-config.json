@@ -19,5 +19,8 @@
     "font": "Inter",
     "mode": "light",
     "secondary_color": "#4F46E5"
+  },
+  "dev_mode": {
+    "log_level": "warning"
   }
 }

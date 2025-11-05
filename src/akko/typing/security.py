@@ -145,15 +145,24 @@ class ApplicationData(BaseModel):
         """Get all unique categories from both link collections.
 
         Returns:
-            list[str]: Sorted list of all unique categories.
+            list[str]: Sorted list of all unique, normalized categories.
         """
-        return sorted(
-            {
-                category
-                for collection in (self.private, self.public)
-                for category in collection.categories
-            }
-        )
+
+        def _norm(s: object) -> str:
+            return str(s).strip().lower()
+
+        explicit = {
+            _norm(category)
+            for collection in (self.private, self.public)
+            for category in collection.categories
+        }
+        from_links = {
+            _norm(link.category)
+            for collection in (self.private, self.public)
+            for link in collection.links
+            if getattr(link, "category", None)
+        }
+        return sorted(explicit | from_links)
 
     def all_links(self) -> list[LinkEntry]:
         """Get all links from both link collections.

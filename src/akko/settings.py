@@ -2,15 +2,27 @@
 
 from __future__ import annotations
 
+import atexit
+import os
+from contextlib import ExitStack
 from functools import lru_cache
+from importlib import resources
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import orjson
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import akko
+from akko.logging import configure_logger, get_logger
 
 
 def find_package_path() -> Path:
@@ -24,32 +36,45 @@ def find_package_path() -> Path:
     return init_path.parent.resolve()
 
 
-CONFIG_FILENAME = "config.json"
+CONFIG_FILENAME = "akko-config.json"
 
 
+_RESOURCE_STACK = ExitStack()
+atexit.register(_RESOURCE_STACK.close)
+
+
+@lru_cache(maxsize=1)
 def _resources_dir() -> Path:
-    """Get the resources folder path.
-
-    Returns:
-        Path: the resources folder path
-    """
-    return find_package_path() / "resources"
+    """Return the on-disk path to the bundled resources directory."""
+    resource = resources.files("akko") / "resources"
+    return _RESOURCE_STACK.enter_context(resources.as_file(resource))
 
 
-def _default_config_template() -> Path:
-    """Get the default config path.
+def _launch_root() -> Path:
+    """Return the directory where the launcher was invoked."""
+    override = os.environ.get("AKKO_WORKDIR")
+    if override:
+        candidate = Path(override).expanduser()
+        if candidate.exists() and not candidate.is_dir():
+            return candidate.parent
+        return candidate
+    return Path.cwd()
+
+
+def _default_config_template() -> str:
+    """Load the default configuration template text.
 
     Raises:
         FileNotFoundError: default config file is missing
 
     Returns:
-        Path: the path to the default config file
+        str: The contents of the default configuration template.
     """
-    resources_dir = _resources_dir()
+    resource_root = _resources_dir()
     for name in ("default-config.json", "default_config.json"):
-        candidate = resources_dir / name
-        if candidate.exists():
-            return candidate
+        candidate = resource_root.joinpath(name)
+        if candidate.is_file():
+            return candidate.read_text(encoding="utf-8")
     raise FileNotFoundError("Default configuration template not found.")
 
 
@@ -82,14 +107,15 @@ def ensure_config_file(start_dir: Path | None = None) -> Path:
     Returns:
         Path: The path to the configuration file.
     """
-    base_dir = start_dir or Path.cwd()
+    base_dir = start_dir or _launch_root()
     existing = _find_existing_config(base_dir)
     if existing is not None:
         return existing
 
     destination = base_dir / CONFIG_FILENAME
-    template_path = _default_config_template()
-    destination.write_text(template_path.read_text(encoding="utf-8"), encoding="utf-8")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    template_content = _default_config_template()
+    destination.write_text(template_content, encoding="utf-8")
     return destination
 
 
@@ -159,6 +185,41 @@ class ThemeConfig(BaseModel):
     secondary_color: str = Field(description="Secondary color for accents.")
 
 
+class DevConfig(BaseModel):
+    """Development-related options.
+
+    enable_debug: Whether to enable debug mode.
+    log_level: Logging level for the application.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(
+        default="INFO", description="Logging level for the application."
+    )
+
+    @field_validator("log_level", mode="before")
+    def validate_log_level(cls, value: str) -> str:
+        """Validate the log level value.
+
+        Args:
+            value (str): The log level value to validate.
+
+        Raises:
+            ValueError: If the log level is not valid.
+
+        Returns:
+            str: The validated log level.
+        """
+        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR"}
+        upper_value = value.upper()
+        if upper_value not in valid_levels:
+            raise ValueError(
+                f"Invalid log level: {value}. Must be one of {valid_levels}."
+            )
+        return upper_value
+
+
 class AkkoSettings(BaseSettings):
     """Validated AKKO configuration.
 
@@ -181,9 +242,14 @@ class AkkoSettings(BaseSettings):
         description="Security-related configuration options."
     )
     theme: ThemeConfig = Field(description="Theme customization settings.")
-    config_path: Path = Field(
-        default_factory=lambda: Path.cwd() / "config.json", exclude=True
+    dev_mode: DevConfig = Field(
+        default_factory=DevConfig,
+        description="Development-related configuration options.",
     )
+    config_path: Path = Field(
+        default_factory=lambda: Path.cwd() / CONFIG_FILENAME, exclude=True
+    )
+    package_path: Path = Field(default_factory=find_package_path, exclude=True)
 
     @model_validator(mode="after")
     def _ensure_data_directories(self) -> AkkoSettings:
@@ -206,6 +272,11 @@ class AkkoSettings(BaseSettings):
         if candidate.is_absolute():
             return candidate
         return (self.config_path.parent / candidate).resolve()
+
+    @property
+    def resources_path(self: AkkoSettings) -> Path:
+        """Get the resources directory path."""
+        return self.package_path / "resources"
 
     @property
     def credentials_file(self: AkkoSettings) -> Path:
@@ -259,7 +330,7 @@ class AkkoSettings(BaseSettings):
         Returns:
             Path: The resolved icons directory path.
         """
-        return find_package_path() / "resources" / "icons"
+        return self.resources_path / "icons"
 
 
 def _load_raw_config(config_path: Path) -> dict[str, Any]:
@@ -274,6 +345,8 @@ def _load_raw_config(config_path: Path) -> dict[str, Any]:
     Returns:
         dict[str, Any]: The loaded configuration data.
     """
+    if not config_path.is_file():
+        raise ValueError(f"Configuration file not found: {config_path}")
     try:
         raw_config: dict[str, Any] = orjson.loads(
             config_path.read_text(encoding="utf-8")
@@ -325,6 +398,9 @@ def reload_settings() -> AkkoSettings:
     get_settings.cache_clear()
     return get_settings()
 
+
+configure_logger(log_level=get_settings().dev_mode.log_level)
+logger = get_logger("akko")
 
 __all__ = [
     "AkkoSettings",

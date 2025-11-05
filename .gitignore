@@ -234,5 +234,5 @@ poetry.toml
 
 data/encrypted/credentials.enc
 data/private/private_links.json
-config.json
+akko-config.json
 .gitlab/**
