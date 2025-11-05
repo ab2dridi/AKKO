@@ -109,24 +109,12 @@ def ensure_config_file(start_dir: Path | None = None) -> Path:
     """
     base_dir = start_dir or _launch_root()
     existing = _find_existing_config(base_dir)
-    logger.debug(
-        extra=(
-            f"Using configuration directory: {base_dir.__str__()}; "
-            "File exists: {existing is not None}"
-        )
-    )
     if existing is not None:
         return existing
 
     destination = base_dir / CONFIG_FILENAME
     destination.parent.mkdir(parents=True, exist_ok=True)
     template_content = _default_config_template()
-    logger.debug(
-        extra=(
-            "No configuration file found; creating default at: "
-            f"{destination.__str__()} using:\n{template_content}\n"
-        )
-    )
     destination.write_text(template_content, encoding="utf-8")
     return destination
 
@@ -380,7 +368,6 @@ def _build_settings() -> AkkoSettings:
         AkkoSettings: The validated settings instance.
     """
     config_path = ensure_config_file()
-    logger.debug(extra=f"Loading configuration from: {config_path.__str__()}")
     raw_config = _load_raw_config(config_path)
     payload: dict[str, Any] = dict(raw_config)
     payload["config_path"] = config_path
