@@ -195,7 +195,7 @@ class DevConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(
-        description="Logging level for the application."
+        default="INFO", description="Logging level for the application."
     )
 
     @field_validator("log_level", mode="before")
@@ -243,14 +243,13 @@ class AkkoSettings(BaseSettings):
     )
     theme: ThemeConfig = Field(description="Theme customization settings.")
     dev_mode: DevConfig = Field(
-        description="Development-related configuration options."
+        default_factory=DevConfig,
+        description="Development-related configuration options.",
     )
     config_path: Path = Field(
         default_factory=lambda: Path.cwd() / CONFIG_FILENAME, exclude=True
     )
-    package_path: Path = Field(
-        default_factory=find_package_path, exclude=True
-    )
+    package_path: Path = Field(default_factory=find_package_path, exclude=True)
 
     @model_validator(mode="after")
     def _ensure_data_directories(self) -> AkkoSettings:
@@ -331,7 +330,7 @@ class AkkoSettings(BaseSettings):
         Returns:
             Path: The resolved icons directory path.
         """
-        return self.package_path / "icons"
+        return self.resources_path / "icons"
 
 
 def _load_raw_config(config_path: Path) -> dict[str, Any]:

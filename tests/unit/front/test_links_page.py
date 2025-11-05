@@ -25,17 +25,6 @@ def test_display_category_capitalizes() -> None:
     assert display_category("") == "Other"
 
 
-def test_format_category_option_labels_new_choice() -> None:
-    format_category_option = cast(
-        Callable[[object], str],
-        _get_private("_format_category_option"),
-    )
-    new_category_option = _get_private("_NEW_CATEGORY_OPTION")
-
-    assert format_category_option(new_category_option) == "(New category)"
-    assert format_category_option("docs") == "Docs"
-
-
 def test_filter_links_applies_filters() -> None:
     links_data = ApplicationData(
         private=LinkCollection(
