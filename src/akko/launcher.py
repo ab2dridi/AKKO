@@ -6,7 +6,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from akko.settings import get_settings, logger
+from akko.settings import ensure_config_file, get_settings, logger
 
 TRUSTED_STREAMLIT_ARGS = ("-m", "streamlit", "run")
 
@@ -40,9 +40,10 @@ def _build_streamlit_command(app_path: Path) -> list[str]:
 
 def launch() -> None:
     """Launch the AKKO Streamlit application."""
+    launch_cwd = Path.cwd()
+    ensure_config_file(start_dir=launch_cwd)
     package_path = get_settings().package_path
     app_path = (package_path / "front" / "app.py").resolve()
-    launch_cwd = Path.cwd()
 
     if not app_path.is_file() or package_path not in app_path.parents:
         gracefully_exit("Streamlit entrypoint not found in trusted location.")

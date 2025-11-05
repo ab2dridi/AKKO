@@ -36,7 +36,7 @@ def find_package_path() -> Path:
     return init_path.parent.resolve()
 
 
-CONFIG_FILENAME = "config.json"
+CONFIG_FILENAME = "akko-config.json"
 
 
 _RESOURCE_STACK = ExitStack()
@@ -258,7 +258,7 @@ class AkkoSettings(BaseSettings):
         description="Development-related configuration options."
     )
     config_path: Path = Field(
-        default_factory=lambda: Path.cwd() / "config.json", exclude=True
+        default_factory=lambda: Path.cwd() / CONFIG_FILENAME, exclude=True
     )
     package_path: Path = Field(
         default_factory=find_package_path, exclude=True
@@ -413,8 +413,7 @@ def reload_settings() -> AkkoSettings:
     return get_settings()
 
 
-# configure_logger(log_level=get_settings().dev_mode.log_level)
-configure_logger(log_level="DEBUG")
+configure_logger(log_level=get_settings().dev_mode.log_level)
 logger = get_logger("akko")
 
 __all__ = [

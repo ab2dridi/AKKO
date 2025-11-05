@@ -66,7 +66,7 @@ def test_reload_settings_raises_on_invalid_json(
     reset_settings_cache: None,
 ) -> None:
     assert reset_settings_cache is None
-    bad_config = tmp_path / "config.json"
+    bad_config = tmp_path / settings_module.CONFIG_FILENAME
     bad_config.write_text("not json", encoding="utf-8")
 
     mocker.patch("akko.settings.ensure_config_file", return_value=bad_config)
@@ -82,7 +82,7 @@ def test_reload_settings_validates_payload(
 ) -> None:
     assert reset_settings_cache is None
     template = _read_default_config_template()
-    config_path = tmp_path / "config.json"
+    config_path = tmp_path / settings_module.CONFIG_FILENAME
     config_path.write_text(template, encoding="utf-8")
 
     mocker.patch("akko.settings.ensure_config_file", return_value=config_path)
@@ -124,7 +124,7 @@ def test_reload_settings_rebuilds_instance(
 def test_akko_settings_resolve_path_and_create_dirs(tmp_path: Path) -> None:
     config_dir = tmp_path / "config"
     config_dir.mkdir()
-    config_path = config_dir / "config.json"
+    config_path = config_dir / settings_module.CONFIG_FILENAME
     payload: dict[str, object] = {
         "app_name": "Test",
         "data_paths": {
