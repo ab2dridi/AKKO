@@ -1,0 +1,25 @@
+{
+  "editor.formatOnSave": true,
+  "editor.linkedEditing": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "markdown.preview.scrollEditorWithPreview": true,
+  "markdown.preview.scrollPreviewWithEditor": true,
+  "notebook.formatOnSave.enabled": true,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#0032ae",
+    "activityBar.background": "#0052ce",
+    "activityBar.foreground": "#ffffff",
+    "activityBar.inactiveForeground": "#dddddd",
+    "menu.background": "#0052ce",
+    "titleBar.activeBackground": "#0052ce",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveBackground": "#0052ce",
+    "titleBar.inactiveForeground": "#dddddd"
+  },
+}

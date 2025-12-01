@@ -1,12 +1,14 @@
 """Launcher module for AKKO application."""
 
+import os
 import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from akko import logger
-from akko.settings import find_package_path
+from akko.settings import ensure_config_file, get_settings, logger
+
+_STREAMLIT_FAILURE_MESSAGE = "Streamlit entrypoint not found in trusted location."
 
 TRUSTED_STREAMLIT_ARGS = ("-m", "streamlit", "run")
 
@@ -40,7 +42,9 @@ def _build_streamlit_command(app_path: Path) -> list[str]:
 
 def launch() -> None:
     """Launch the AKKO Streamlit application."""
-    package_path = find_package_path()
+    launch_cwd = Path.cwd()
+    ensure_config_file(start_dir=launch_cwd)
+    package_path = get_settings().package_path
     app_path = (package_path / "front" / "app.py").resolve()
 
     if not app_path.is_file() or package_path not in app_path.parents:
@@ -54,16 +58,22 @@ def launch() -> None:
         return
 
     try:
+        env = os.environ.copy()
+        env["AKKO_WORKDIR"] = str(launch_cwd)
         # Launch Streamlit from the app directory
         subprocess.run(  # noqa: S603 - command is built from trusted inputs only
             command,
             check=True,
+            cwd=str(launch_cwd),
+            env=env,
         )
 
-    except FileNotFoundError as e:
-        gracefully_exit(e.__repr__())
-    except Exception as e:
-        gracefully_exit(f"Error launching AKKO: {e}")
+    except FileNotFoundError as exc:
+        logger.exception("Streamlit executable not found.", exc_info=exc)
+        gracefully_exit(_STREAMLIT_FAILURE_MESSAGE)
+    except Exception as exc:  # pragma: no cover - unexpected runtime errors
+        logger.exception("Unexpected error while launching Streamlit.", exc_info=exc)
+        gracefully_exit(_STREAMLIT_FAILURE_MESSAGE)
 
 
 if __name__ == "__main__":

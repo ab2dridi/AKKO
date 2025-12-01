@@ -7,8 +7,8 @@ from cryptography.fernet import Fernet
 from streamlit.delta_generator import DeltaGenerator
 
 from akko.core.security import save_data
-from akko.front.helpers import try_copy
-from akko.settings import find_package_path
+from akko.front.helpers import copy_button
+from akko.settings import get_settings
 from akko.typing.credentials import (
     CredentialPayload,
     GitLabTokenCredential,
@@ -19,7 +19,7 @@ from akko.typing.credentials import (
     credential_registry,
 )
 
-STYLE_PATH = find_package_path() / "resources" / "credentials.css"
+STYLE_PATH = get_settings().resources_path / "credentials.css"
 TYPE_ORDER = [*credential_registry.keys(), "All"]
 TYPE_FILTER_MAP: dict[str, str | None] = {**clean_name_relation(), "All": None}
 ICON_MAP = {
@@ -45,7 +45,13 @@ def _render_search_box() -> str:
 def _render_type_filter() -> NormalizedCredentialName | None:
     """Render the type filter radio buttons and return the chosen type."""
     st.markdown("### 🔍 Filter by type")
-    selection = st.radio("", TYPE_ORDER, horizontal=True, index=len(TYPE_ORDER) - 1)
+    selection = st.radio(
+        "Credential type",
+        TYPE_ORDER,
+        horizontal=True,
+        index=len(TYPE_ORDER) - 1,
+        label_visibility="collapsed",
+    )
     mapped = TYPE_FILTER_MAP.get(selection)
     if mapped is None:
         return None
@@ -109,18 +115,15 @@ def _inject_styles() -> None:
     )
 
 
-def _render_copy_button(label: str, key: str, value: str, toast_label: str) -> None:
-    """Render a copy button and trigger clipboard copy on click.
+def _render_copy_button(value: str, label: str) -> None:
+    """Render a copy button and trigger clipboard copy on click..
 
     Args:
-        label (str): Text shown on the button.
-        key (str): Streamlit widget key for the button.
-        value (str): Raw value to copy to the clipboard.
-        toast_label (str): Label used in the toast notification.
-
+        value (str): Text value to copy to clipboard.
+        label (str): Label displayed on the copy button.
+        toast_label (str): Label used in copy confirmation toasts.
     """
-    if st.button(label, key=key):
-        try_copy(value, toast_label)
+    copy_button(text=value, label=label)
 
 
 def _render_secret_field(
@@ -147,7 +150,7 @@ def _render_secret_field(
     display_value = value if show_value else "•" * mask_length
     st.code(display_value, language="")
     button_label = f"📋 Copy {toast_label.lower()}"
-    _render_copy_button(button_label, f"{key_prefix}_copy_{idx}", value, toast_label)
+    _render_copy_button(value, button_label)
 
 
 def _render_website_credentials(
@@ -171,12 +174,12 @@ def _render_website_credentials(
         if url:
             st.markdown(f"[🌐 Open link]({url})", unsafe_allow_html=True)
         st.code(url, language="")
-        _render_copy_button("📋 Copy URL", f"url_{idx}", url, "URL")
+        _render_copy_button(url, "📋 Copy URL")
 
     with cols[1]:
         st.write("**Username:**")
         st.code(username, language="")
-        _render_copy_button("📋 Copy username", f"user_{idx}", username, "Username")
+        _render_copy_button(username, "📋 Copy username")
 
     with cols[2]:
         _render_secret_field("Password", password, "pass", idx, "Password")
@@ -201,12 +204,12 @@ def _render_linux_server_credentials(
     with cols[0]:
         st.write("**Hostname / IP:**")
         st.code(hostname, language="")
-        _render_copy_button("📋 Copy host", f"host_{idx}", hostname, "Hostname")
+        _render_copy_button(hostname, "📋 Copy host")
 
     with cols[1]:
         st.write("**Username:**")
         st.code(username, language="")
-        _render_copy_button("📋 Copy username", f"user_{idx}", username, "Username")
+        _render_copy_button(username, "📋 Copy username")
 
     with cols[2]:
         _render_secret_field("Password", password, "pass", idx, "Password")

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
+from typing import Any, cast
 
 from pydantic import AnyUrl
 from pytest_mock import MockerFixture
@@ -23,17 +23,6 @@ def test_display_category_capitalizes() -> None:
     display_category = cast(Callable[[str], str], _get_private("_display_category"))
     assert display_category("dev ops") == "Dev ops"
     assert display_category("") == "Other"
-
-
-def test_format_category_option_labels_new_choice() -> None:
-    format_category_option = cast(
-        Callable[[object], str],
-        _get_private("_format_category_option"),
-    )
-    new_category_option = _get_private("_NEW_CATEGORY_OPTION")
-
-    assert format_category_option(new_category_option) == "(New category)"
-    assert format_category_option("docs") == "Docs"
 
 
 def test_filter_links_applies_filters() -> None:
@@ -119,3 +108,139 @@ def test_add_link_appends_and_persists(mocker: MockerFixture) -> None:
     success_mock.assert_called_once()
     assert session_state["show_form_links"] is False
     rerun_mock.assert_called_once()
+
+
+def test_render_add_link_toggle_flips_state(mocker: MockerFixture) -> None:
+    toggle = cast(Callable[[], None], _get_private("_render_add_link_toggle"))
+    session_state: dict[str, object] = {}
+    mocker.patch("akko.front.links_page.st.session_state", session_state)
+    mocker.patch("akko.front.links_page.st.button", return_value=True)
+
+    toggle()
+
+    assert session_state["show_form_links"] is True
+
+
+def test_render_filters_returns_expected_values(mocker: MockerFixture) -> None:
+    render_filters = cast(
+        Callable[[ApplicationData], tuple[str, str, str]],
+        _get_private("_render_filters"),
+    )
+    mocker.patch("akko.front.links_page.st.text_input", return_value="  Query ")
+    mocker.patch("akko.front.links_page.st.markdown")
+    mocker.patch(
+        "akko.front.links_page.st.radio",
+        side_effect=["private", "Dev ops"],
+    )
+
+    links_data = ApplicationData(
+        private=LinkCollection(categories=["dev ops"]),
+        public=LinkCollection(),
+    )
+
+    query, tag, category = render_filters(links_data)
+
+    assert query == "query"
+    assert tag == "private"
+    assert category == "dev ops"
+
+
+def test_render_links_list_invokes_link_card(mocker: MockerFixture) -> None:
+    render_list = cast(
+        Callable[[list[LinkEntry], ApplicationData], None],
+        _get_private("_render_links_list"),
+    )
+    link = LinkEntry(
+        title="Example",
+        url=cast(AnyUrl, "https://example.com"),
+        category="docs",
+    )
+    links_data = ApplicationData()
+    render_card_mock = mocker.patch("akko.front.links_page._render_link_card")
+
+    render_list([link], links_data)
+
+    render_card_mock.assert_called_once_with(0, link, links_data)
+
+
+def test_render_link_card_handles_deletion(mocker: MockerFixture) -> None:
+    render_card = cast(
+        Callable[[int, LinkEntry, ApplicationData], None],
+        _get_private("_render_link_card"),
+    )
+    mocker.patch("akko.front.links_page.find_icon", return_value=None)
+    mocker.patch("akko.front.links_page.copy_button")
+    mocker.patch("akko.front.links_page.st.markdown")
+
+    columns: list[Any] = []
+    for _ in range(4):
+        column = mocker.MagicMock()
+        column.__enter__.return_value = column
+        column.__exit__.return_value = None
+        columns.append(column)
+
+    mocker.patch("akko.front.links_page.st.columns", return_value=columns)
+    mocker.patch("akko.front.links_page.st.button", return_value=True)
+    mocker.patch("akko.front.links_page.save_links")
+    mocker.patch("akko.front.links_page.st.success")
+    rerun_mock = mocker.patch("akko.front.links_page.st.rerun")
+    mocker.patch("akko.front.links_page.st.image")
+    mocker.patch("akko.front.links_page.st.code")
+
+    entry = LinkEntry(
+        title="Docs",
+        url=cast(AnyUrl, "https://docs.example.com"),
+        category="docs",
+        tag="private",
+    )
+    links_data = ApplicationData(
+        private=LinkCollection(links=[entry], categories=["docs"]),
+        public=LinkCollection(),
+    )
+
+    render_card(0, entry, links_data)
+
+    assert links_data.private.links == []
+    rerun_mock.assert_called_once()
+
+
+def test_show_links_handles_empty_and_populated(mocker: MockerFixture) -> None:
+    mocker.patch("akko.front.links_page.load_links", return_value=ApplicationData())
+    mocker.patch("akko.front.links_page.st.subheader")
+    info_mock = mocker.patch("akko.front.links_page.st.info")
+    mocker.patch("akko.front.links_page._render_add_link_toggle")
+    session_state: dict[str, object] = {"show_form_links": False}
+    mocker.patch("akko.front.links_page.st.session_state", session_state)
+
+    links_page.show_links()
+
+    info_mock.assert_called_once()
+
+    populated = ApplicationData(
+        private=LinkCollection(
+            links=[
+                LinkEntry(
+                    title="Docs",
+                    url=cast(AnyUrl, "https://docs.example.com"),
+                    category="docs",
+                    tag="private",
+                )
+            ],
+            categories=["docs"],
+        )
+    )
+
+    mocker.patch("akko.front.links_page.load_links", return_value=populated)
+    mocker.patch("akko.front.links_page._render_add_link_toggle")
+    mocker.patch("akko.front.links_page._render_add_link_form")
+    mocker.patch(
+        "akko.front.links_page._render_filters",
+        return_value=("", "All", "All"),
+    )
+    render_list_mock = mocker.patch("akko.front.links_page._render_links_list")
+    warning_mock = mocker.patch("akko.front.links_page.st.warning")
+
+    links_page.show_links()
+
+    render_list_mock.assert_called_once()
+    warning_mock.assert_not_called()
