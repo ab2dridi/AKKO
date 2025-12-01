@@ -1,7 +1,5 @@
 """Streamlit page responsible for displaying, filtering, and managing links."""
 
-from typing import cast
-
 import streamlit as st
 from pydantic import AnyUrl, ValidationError
 
@@ -34,24 +32,6 @@ def _display_category(name: str) -> str:
     return name.strip().capitalize() if name else "Other"
 
 
-_NEW_CATEGORY_OPTION = object()
-
-
-def _format_category_option(option: object) -> str:
-    """Format category options for the select box display.
-
-    Args:
-        option (object): Raw option returned by the select box.
-
-    Returns:
-        str: User-friendly label rendered in the UI.
-
-    """
-    if option == _NEW_CATEGORY_OPTION:
-        return "(New category)"
-    return _display_category(cast(str, option))
-
-
 def _render_add_link_toggle() -> None:
     """Render the toggle button that expands or collapses the link form."""
     st.session_state["show_form_links"] = st.session_state.get("show_form_links", False)
@@ -71,32 +51,35 @@ def _render_add_link_form(links_data: ApplicationData) -> None:
         title = st.text_input("Title")
         url = st.text_input("URL")
 
-        cat_col = st.columns([2, 1])
-        category_options: list[object] = [
-            _NEW_CATEGORY_OPTION,
-            *links_data.all_categories(),
-        ]
-        with cat_col[0]:
-            category_choice = st.selectbox(
-                "Category",
-                category_options,
-                format_func=_format_category_option,
-            )
-        with cat_col[1]:
-            new_cat = (
-                st.text_input("New category")
-                if category_choice == _NEW_CATEGORY_OPTION
-                else ""
-            )
+        all_categories = links_data.all_categories()
+
+        # Si aucune catégorie n'existe, afficher seulement le champ pour une nouvelle
+        if not all_categories:
+            new_cat = st.text_input("Category (new)")
+            category_display = ""
+        else:
+            # Si des catégories existent, afficher les deux champs côte à côte
+            cat_col = st.columns(2)
+            with cat_col[0]:
+                display_cats = [_display_category(c) for c in all_categories]
+                category_display = st.selectbox(
+                    "Existing category",
+                    ["(Select existing)", *display_cats],
+                )
+            with cat_col[1]:
+                new_cat = st.text_input("Or new category")
 
         tag = st.radio("Visibility", ["public", "private"], horizontal=True)
         submitted = st.form_submit_button("Add")
 
     if submitted and title and url:
-        if category_choice == _NEW_CATEGORY_OPTION:
+        # Priorité : nouvelle catégorie > catégorie existante
+        if new_cat.strip():
             final_cat = _normalize_category(new_cat)
+        elif category_display and category_display != "(Select existing)":
+            final_cat = _normalize_category(category_display)
         else:
-            final_cat = _normalize_category(cast(str, category_choice))
+            final_cat = ""
 
         if not final_cat:
             st.error("Please provide a category name.")
