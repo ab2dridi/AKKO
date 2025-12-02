@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/ab2dridi/AKKO/security/advisories/new
+    about: Please report security issues privately so we can coordinate a fix before disclosure.
+  - name: Ask a question in Discussions
+    url: https://github.com/ab2dridi/AKKO/discussions
+    about: Use Discussions for help that is not a bug or feature request.

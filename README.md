@@ -89,13 +89,12 @@ Add development tooling with `uv sync --extra dev` or install optional dependenc
 **Runtime (`requirements.txt`)**
 
 ```text
-cryptography>=46.0.0
-orjson>=3.11.0
-pydantic-settings>=2.12.0
-pydantic>=2.12.0
-pyperclip>=1.11.0
-streamlit>=1.51.0
-structlog>=25.5.0
+cryptography>=43.0.0
+orjson>=3.9.1
+pydantic-settings>=2.3.0
+pydantic>=2.7.0
+streamlit>=1.38.0
+structlog>=23.1.0
 ```
 
 Install these with `pip install -r requirements.txt` or `uv pip install -r requirements.txt`. Update the file whenever a runtime dependency changes to keep packaging metadata in sync.

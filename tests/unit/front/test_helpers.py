@@ -7,32 +7,6 @@ from pytest_mock import MockerFixture
 import akko.front.helpers as helpers
 
 
-def test_try_copy_success_triggers_toast(mocker: MockerFixture) -> None:
-    copy_mock = mocker.patch("akko.front.helpers.pyperclip.copy")
-    toast_mock = mocker.patch("akko.front.helpers.st.toast")
-    warning_mock = mocker.patch("akko.front.helpers.st.warning")
-
-    helpers.try_copy("value", "Label")
-
-    copy_mock.assert_called_once_with("value")
-    toast_mock.assert_called_once_with("Label copié dans le presse-papiers.")
-    warning_mock.assert_not_called()
-
-
-def test_try_copy_failure_shows_warning(mocker: MockerFixture) -> None:
-    mocker.patch("akko.front.helpers.pyperclip.copy", side_effect=RuntimeError("boom"))
-    toast_mock = mocker.patch("akko.front.helpers.st.toast")
-    warning_mock = mocker.patch("akko.front.helpers.st.warning")
-
-    helpers.try_copy("value", "Label")
-
-    toast_mock.assert_not_called()
-    warning_mock.assert_called_once()
-    message = warning_mock.call_args.args[0]
-    assert "Label" not in message
-    assert "boom" in message
-
-
 def test_find_icon_returns_matching_file(tmp_path: Path, mocker: MockerFixture) -> None:
     icons_dir = tmp_path / "icons"
     icons_dir.mkdir()

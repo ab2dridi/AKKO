@@ -5,3 +5,6 @@ backgroundColor="#F9FAFB"             # Presque blanc
 secondaryBackgroundColor="#FFFFFF"    # Cartes et encadrés
 textColor="#111827"                   # Noir doux
 font="sans serif"
+
+[server]
+runOnSave=true
