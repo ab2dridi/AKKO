@@ -12,6 +12,9 @@
 - 100% offline: no external servers or databases
 - Auto-lock after inactivity for extra security
 - Typed configuration powered by `pydantic-settings`
+- **Intelligent category management** with side-by-side selection for existing or new categories
+- **82 unit tests** with 62.81% code coverage
+- **Pre-commit hooks** for code quality (ruff, mypy, security checks)
 
 ---
 
@@ -108,15 +111,60 @@ This keeps the shipped runtime minimal while letting contributors bootstrap a fu
 
 ---
 
+## 🧪 Testing & Quality
+
+### Running tests
+
+```bash
+# Run all tests with coverage
+python -m pytest tests/ -v
+
+# Run with detailed coverage report
+python -m pytest tests/ --cov=src/akko --cov-report=html
+
+# View coverage report
+open htmlcov/index.html
+```
+
+**Current metrics:**
+- 82 unit tests
+- 62.81% overall coverage
+- Modules with >85% coverage: `settings.py`, `launcher.py`, `credentials.py`, `security.py`
+
+### Code quality
+
+AKKO uses **pre-commit hooks** to enforce code quality standards:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run all hooks manually
+pre-commit run --all-files
+```
+
+**Active checks:**
+- **ruff**: Python linting and formatting
+- **mypy**: Static type checking
+- **pyupgrade**: Modern Python syntax (3.10+)
+- **detect-secrets**: Prevent committing sensitive data
+- Security checks (no direct commits to `main` branch)
+
+---
+
 ## 🧰 Useful Files
 
 | Path                                     | Description                                                              |
 | ---------------------------------------- | ------------------------------------------------------------------------ |
 | `src/akko/launcher.py`                   | Implements the `akko-launch` CLI and guards the Streamlit invocation.    |
 | `src/akko/front/app.py`                  | Main Streamlit application rendered in the browser.                      |
+| `src/akko/front/links_page.py`           | Links management with intelligent category handling.                     |
+| `src/akko/front/credentials_manage.py`   | Credential addition forms (Website, Linux Server, GitLab Token).         |
 | `src/akko/core/security.py`              | Encryption, hashing, and credential safety helpers.                      |
 | `src/akko/settings.py`                   | Loads and validates configuration from `config.json`.                    |
 | `src/akko/resources/default-config.json` | Template copied whenever `config.json` is missing.                       |
+| `tests/`                                 | Unit tests organized by module (82 tests with 62.81% coverage).         |
+| `.pre-commit-config.yaml`                | Pre-commit hooks configuration for code quality.                         |
 | `config.json`                            | Project-level configuration generated on first launch.                   |
 | `data/encrypted/`                        | Encrypted credentials vault (contains `credentials.enc`).                |
 | `data/private/`                          | Private link definitions (`private_links.json`).                         |
